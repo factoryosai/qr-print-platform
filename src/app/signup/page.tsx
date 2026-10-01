@@ -31,19 +31,20 @@ export default function SignupPage() {
     }
 
     if (authData.user) {
-      const shopId = 'SHOP' + Math.floor(100 + Math.random() * 900);
-      const agentSecret = crypto.randomUUID();
-
-      const { error: shopError } = await supabase.from('shops').insert({
-        id: shopId,
-        owner_user_id: authData.user.id,
-        name: shopName,
-        agent_secret: agentSecret,
-        email: email,
+      const res = await fetch('/api/shop/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: authData.user.id,
+          shopName,
+          email,
+        }),
       });
 
-      if (shopError) {
-        setError(shopError.message);
+      const json = await res.json();
+      
+      if (!res.ok) {
+        setError(json.error || 'Failed to create shop profile');
         setLoading(false);
         return;
       }
