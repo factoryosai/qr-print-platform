@@ -28,53 +28,54 @@ export default function ReferPage() {
 
   return (
     <>
-      <div className="shop-topbar">
-        <div>
-          <div className="shop-topbar-label">Shop Panel</div>
-          <h1>Refer &amp; Earn</h1>
-        </div>
+      <div className="sp-topbar">
+        <div className="sp-topbar-left"><small>Shop Panel</small><h1>Refer &amp; Earn</h1></div>
       </div>
 
-      <div className="shop-content">
-        <div className="card border-0 shadow-sm mb-4" style={{ background: 'linear-gradient(135deg, #111 0%, #1e293b 100%)', color: 'white' }}>
-          <div className="card-body p-5 text-center">
+      <div className="sp-body">
+        <div className="shop-id-box" style={{ background: 'linear-gradient(135deg, #f43f64 0%, #db2777 100%)', textAlign: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+          <div style={{ maxWidth: 600, margin: '0 auto' }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🎁</div>
-            <h3 className="fw-bold mb-2">Refer a shop, earn rewards</h3>
-            <p style={{ color: '#9ca3af', maxWidth: 400, margin: '0 auto 24px' }}>
-              Share your referral link with other print shop owners. When they sign up and activate a plan, you earn wallet credits.
+            <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 12px' }}>Refer a shop, earn rewards</h2>
+            <p style={{ color: '#fbcfe8', fontSize: 15, marginBottom: 28, lineHeight: 1.5 }}>
+              Share your referral link with other print shop owners. When they sign up and activate a plan, you both earn wallet credits.
             </p>
             {shop && (
-              <div className="d-flex gap-2 justify-content-center" style={{ maxWidth: 500, margin: '0 auto' }}>
-                <input readOnly value={referralLink} className="form-control bg-white text-dark font-monospace" style={{ fontSize: 12 }} />
-                <button onClick={copy} className="btn btn-light fw-bold flex-shrink-0">
-                  <i className={`bi ${copied ? 'bi-check' : 'bi-copy'} me-1`}></i>
-                  {copied ? 'Copied!' : 'Copy'}
+              <div style={{ display: 'flex', gap: 8, background: 'rgba(255,255,255,0.1)', padding: 8, borderRadius: 12, alignItems: 'center' }}>
+                <input 
+                  readOnly 
+                  value={referralLink} 
+                  style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: 14, fontFamily: 'monospace', padding: '0 12px', outline: 'none' }} 
+                />
+                <button onClick={copy} className="btn-sp" style={{ background: '#fff', color: '#db2777' }}>
+                  <i className={`bi ${copied ? 'bi-check' : 'bi-copy'}`}></i>
+                  {copied ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="row g-3 mb-4">
+        <div className="stat-row" style={{ marginTop: 24 }}>
           {[
-            { icon: '👥', label: 'Total Referrals', value: 0 },
-            { icon: '✅', label: 'Active Referrals', value: 0 },
-            { icon: '💰', label: 'Credits Earned', value: '₹0' },
+            { icon: 'bi-people', label: 'Total Referrals', value: 0, color: '#2563eb', bg: '#eff6ff' },
+            { icon: 'bi-check-circle', label: 'Active Referrals', value: 0, color: '#059669', bg: '#f0fdf4' },
+            { icon: 'bi-coin', label: 'Credits Earned', value: '₹0', color: '#d97706', bg: '#fffbeb' },
           ].map(s => (
-            <div key={s.label} className="col-md-4">
-              <div className="card border-0 shadow-sm text-center p-4">
-                <div style={{ fontSize: 28 }}>{s.icon}</div>
-                <div style={{ fontSize: 26, fontWeight: 700 }}>{s.value}</div>
-                <div className="text-muted" style={{ fontSize: 12 }}>{s.label}</div>
-              </div>
+            <div key={s.label} className="stat-card" style={{ padding: '24px 20px', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <div className="stat-icon" style={{ background: s.bg, width: 56, height: 56, fontSize: 24, marginBottom: 8 }}><i className={`bi ${s.icon}`} style={{ color: s.color }}></i></div>
+              <div className="stat-val" style={{ fontSize: 28 }}>{s.value}</div>
+              <div className="stat-label">{s.label}</div>
             </div>
           ))}
         </div>
 
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white py-3 fw-bold">Referral History</div>
-          <div className="card-body text-center text-muted py-5">
-            <i className="bi bi-people" style={{ fontSize: 32, display: 'block', marginBottom: 8 }}></i>
+        <div className="table-card">
+          <div className="table-card-header">
+            <h2>Referral History</h2>
+          </div>
+          <div style={{ padding: 60, textAlign: 'center', color: '#687080' }}>
+            <i className="bi bi-gift" style={{ fontSize: 32, display: 'block', marginBottom: 12, opacity: 0.4 }}></i>
             No referrals yet. Share your link to start earning!
           </div>
         </div>

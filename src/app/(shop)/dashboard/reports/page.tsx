@@ -31,68 +31,78 @@ export default function ReportsPage() {
 
   const totalRevenue = orders.filter(o => o.print_status === 'printed').reduce((sum, o) => sum + Number(o.total_amount), 0);
 
+  const statusBadge = (s: string) => {
+    const cls: any = { queued: 'badge-queued', printed: 'badge-printed', failed: 'badge-failed', printing: 'badge-printing', cancelled: 'badge-cancelled' };
+    return <span className={cls[s] || 'badge-cancelled'}>{s}</span>;
+  };
+
   return (
     <>
-      <div className="shop-topbar">
-        <div>
-          <div className="shop-topbar-label">Shop Panel</div>
-          <h1>Reports</h1>
-        </div>
+      <div className="sp-topbar">
+        <div className="sp-topbar-left"><small>Shop Panel</small><h1>Reports</h1></div>
       </div>
 
-      <div className="shop-content">
-        <div className="row g-3 mb-4">
+      <div className="sp-body">
+        <div className="stat-row">
           {[
-            { label: 'Total Orders', value: orders.length },
-            { label: 'Printed', value: orders.filter(o => o.print_status === 'printed').length },
-            { label: 'Failed', value: orders.filter(o => o.print_status === 'failed').length },
-            { label: 'Revenue (informational)', value: `₹${totalRevenue}` },
+            { label: 'Total Orders', val: orders.length, icon: 'bi-receipt', bg: '#eff6ff', color: '#2563eb' },
+            { label: 'Printed', val: orders.filter(o => o.print_status === 'printed').length, icon: 'bi-printer', bg: '#f0fdf4', color: '#059669' },
+            { label: 'Failed', val: orders.filter(o => o.print_status === 'failed').length, icon: 'bi-x-circle', bg: '#fef2f2', color: '#dc2626' },
+            { label: 'Total Revenue', val: `₹${totalRevenue}`, icon: 'bi-cash', bg: '#fefce8', color: '#ca8a04' },
           ].map(s => (
-            <div key={s.label} className="col-6 col-xl-3">
-              <div className="card border-0 shadow-sm">
-                <div className="card-body">
-                  <div style={{ fontSize: 22, fontWeight: 700 }}>{s.value}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>{s.label}</div>
-                </div>
-              </div>
+            <div key={s.label} className="stat-card">
+              <div className="stat-icon" style={{ background: s.bg }}><i className={`bi ${s.icon}`} style={{ color: s.color }}></i></div>
+              <div><div className="stat-val">{s.val}</div><div className="stat-label">{s.label}</div></div>
             </div>
           ))}
         </div>
 
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white py-3">
-            <div className="d-flex gap-2 flex-wrap">
-              <input className="form-control form-control-sm" style={{ maxWidth: 240 }} placeholder="Search name, mobile, order#..." value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="table-card">
+          <div className="table-card-header" style={{ flexWrap: 'wrap', gap: 12 }}>
+            <input 
+              className="form-control-sp" 
+              style={{ maxWidth: 260 }} 
+              placeholder="Search name, mobile, order#..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+            />
+            <div style={{ display: 'flex', gap: 6 }}>
               {['all', 'queued', 'printed', 'failed', 'cancelled'].map(s => (
-                <button key={s} onClick={() => setFilter(s)} className={`btn btn-sm ${filter === s ? 'btn-dark' : 'btn-outline-secondary'}`}>
+                <button 
+                  key={s} 
+                  onClick={() => setFilter(s)} 
+                  className={filter === s ? 'btn-sp btn-sp-dark' : 'btn-sp btn-sp-outline'}
+                  style={{ padding: '6px 12px', fontSize: 12 }}>
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </button>
               ))}
             </div>
           </div>
-          <div className="table-responsive">
-            <table className="table table-hover mb-0 align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>Order #</th><th>Customer</th><th>Service</th><th>Settings</th><th>Amount</th><th>Status</th><th>Date</th>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#f5f7f8' }}>
+                  {['Order #', 'Customer', 'Service', 'Settings', 'Amount', 'Status', 'Date'].map(h => (
+                    <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 700, fontSize: 12, color: '#687080', borderBottom: '1px solid #dfe3e8' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 && (
-                  <tr><td colSpan={7} className="text-center text-muted py-5">No orders found.</td></tr>
+                  <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#687080' }}>No orders found matching filters.</td></tr>
                 )}
                 {filtered.map(o => (
-                  <tr key={o.id}>
-                    <td className="fw-bold font-monospace">{o.order_number}</td>
-                    <td>
-                      <div className="fw-semibold">{o.customer_name}</div>
-                      <small className="text-muted">{o.mobile}</small>
+                  <tr key={o.id} style={{ borderBottom: '1px solid #f5f7f8' }}>
+                    <td style={{ padding: '12px 16px', fontWeight: 700, fontFamily: 'monospace', fontSize: 12 }}>{o.order_number}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <div style={{ fontWeight: 600 }}>{o.customer_name}</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>{o.mobile}</div>
                     </td>
-                    <td><span className="badge bg-light text-dark border">{o.service_type}</span></td>
-                    <td className="small text-muted">{o.print_settings?.paper_size} · {o.print_settings?.color_mode} · {o.print_settings?.copies}x</td>
-                    <td className="fw-bold">₹{o.total_amount}</td>
-                    <td><span className={`badge bg-${o.print_status === 'printed' ? 'success' : o.print_status === 'failed' ? 'danger' : o.print_status === 'cancelled' ? 'secondary' : 'warning'}`}>{o.print_status}</span></td>
-                    <td className="small text-muted">{new Date(o.created_at).toLocaleDateString('en-IN')}</td>
+                    <td style={{ padding: '12px 16px' }}><span style={{ background: '#f3f4f6', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>{o.service_type}</span></td>
+                    <td style={{ padding: '12px 16px', color: '#687080', fontSize: 12 }}>{o.print_settings?.paper_size} · {o.print_settings?.color_mode?.toUpperCase()} · {o.print_settings?.copies}x</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 700 }}>₹{o.total_amount}</td>
+                    <td style={{ padding: '12px 16px' }}>{statusBadge(o.print_status)}</td>
+                    <td style={{ padding: '12px 16px', color: '#9ca3af', fontSize: 12 }}>{new Date(o.created_at).toLocaleDateString('en-IN')}</td>
                   </tr>
                 ))}
               </tbody>

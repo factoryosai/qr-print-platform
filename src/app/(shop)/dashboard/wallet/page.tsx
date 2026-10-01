@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+
 export default function WalletPage() {
   const plans = [
     { name: 'Demo', price: 0, period: '5 days', jobs: '10 demo jobs', highlight: false },
@@ -10,54 +13,55 @@ export default function WalletPage() {
 
   return (
     <>
-      <div className="shop-topbar">
-        <div>
-          <div className="shop-topbar-label">Shop Panel</div>
-          <h1>Wallet &amp; Plans</h1>
-        </div>
+      <div className="sp-topbar">
+        <div className="sp-topbar-left"><small>Shop Panel</small><h1>Wallet &amp; Plans</h1></div>
       </div>
 
-      <div className="shop-content">
+      <div className="sp-body">
         {/* Wallet Balance */}
-        <div className="card border-0 shadow-sm mb-4" style={{ background: '#111', color: 'white' }}>
-          <div className="card-body p-4">
-            <div style={{ fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Wallet Balance</div>
-            <div style={{ fontSize: 36, fontWeight: 800, marginTop: 4 }}>₹0.00</div>
-            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>Add funds to activate your subscription plan.</div>
-            <button className="btn btn-light btn-sm fw-bold mt-3">Add Funds</button>
+        <div className="shop-id-box" style={{ background: '#1d4ed8' }}>
+          <div>
+            <div className="shop-id-label" style={{ color: '#bfdbfe' }}>Wallet Balance</div>
+            <div className="shop-id-value">₹0.00</div>
+            <div className="shop-id-sub" style={{ color: '#bfdbfe' }}>Add funds to activate your subscription plan.</div>
+          </div>
+          <div>
+            <button className="btn-sp" style={{ background: '#fff', color: '#1d4ed8' }}>Add Funds</button>
           </div>
         </div>
 
         {/* Plans */}
-        <h5 className="fw-bold mb-3">Available Plans</h5>
-        <div className="row g-3">
+        <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16, color: '#171821' }}>Available Plans</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
           {plans.map((plan) => (
-            <div key={plan.name} className="col-md-6 col-xl-3">
-              <div className={`card border-0 shadow-sm h-100 ${plan.highlight ? 'border-primary' : ''}`} style={plan.highlight ? { borderWidth: 2, borderStyle: 'solid', borderColor: '#2563eb' } : {}}>
-                <div className="card-body p-4 d-flex flex-column">
-                  {plan.highlight && <span className="badge bg-primary mb-2 align-self-start">Most Popular</span>}
-                  <div className="fw-bold mb-1" style={{ fontSize: 15 }}>{plan.name}</div>
-                  <div style={{ fontSize: 30, fontWeight: 800 }}>₹{plan.price}</div>
-                  <div className="text-muted" style={{ fontSize: 12, marginBottom: 12 }}>{plan.period}</div>
-                  <ul className="list-unstyled mb-4" style={{ fontSize: 13 }}>
-                    <li className="mb-1"><i className="bi bi-check2 text-success me-1"></i>{plan.jobs}</li>
-                    <li className="mb-1"><i className="bi bi-check2 text-success me-1"></i>No per-print fee</li>
-                    <li><i className="bi bi-check2 text-success me-1"></i>Print Agent access</li>
-                  </ul>
-                  <button className={`btn ${plan.highlight ? 'btn-primary' : 'btn-outline-dark'} fw-bold mt-auto`}>
-                    {plan.price === 0 ? 'Current Plan' : 'Activate'}
-                  </button>
-                </div>
+            <div key={plan.name} className="info-card" style={{ marginBottom: 0, border: plan.highlight ? '2px solid #2563eb' : '1px solid #dfe3e8', display: 'flex', flexDirection: 'column' }}>
+              <div className="info-card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {plan.highlight && <span style={{ background: '#dbeafe', color: '#1e40af', padding: '4px 8px', borderRadius: 4, fontSize: 11, fontWeight: 800, alignSelf: 'flex-start', marginBottom: 12 }}>MOST POPULAR</span>}
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#687080' }}>{plan.name}</div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#171821', margin: '4px 0' }}>₹{plan.price}</div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>{plan.period}</div>
+                
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', fontSize: 13, color: '#171821' }}>
+                  <li style={{ marginBottom: 8 }}><i className="bi bi-check2 text-success" style={{ marginRight: 8, fontSize: 16 }}></i>{plan.jobs}</li>
+                  <li style={{ marginBottom: 8 }}><i className="bi bi-check2 text-success" style={{ marginRight: 8, fontSize: 16 }}></i>No per-print fee</li>
+                  <li><i className="bi bi-check2 text-success" style={{ marginRight: 8, fontSize: 16 }}></i>Print Agent access</li>
+                </ul>
+                
+                <button className={plan.highlight ? 'btn-sp btn-sp-primary' : 'btn-sp btn-sp-outline'} style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}>
+                  {plan.price === 0 ? 'Current Plan' : 'Activate'}
+                </button>
               </div>
             </div>
           ))}
         </div>
 
         {/* Transactions */}
-        <div className="card border-0 shadow-sm mt-4">
-          <div className="card-header bg-white py-3 fw-bold">Transaction History</div>
-          <div className="card-body text-center text-muted py-5">
-            <i className="bi bi-clock-history" style={{ fontSize: 32, display: 'block', marginBottom: 8 }}></i>
+        <div className="table-card">
+          <div className="table-card-header">
+            <h2>Transaction History</h2>
+          </div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#687080' }}>
+            <i className="bi bi-clock-history" style={{ fontSize: 32, display: 'block', marginBottom: 8, opacity: 0.4 }}></i>
             No transactions yet.
           </div>
         </div>
