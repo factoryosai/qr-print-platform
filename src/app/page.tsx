@@ -1,262 +1,386 @@
-'use client';
-
+import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, QrCode, Smartphone, Printer, CheckCircle2, Cloud, Shield, Zap, LayoutDashboard } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Top Banner */}
-      <div className="bg-indigo-600 text-white text-sm py-2 px-4 text-center font-medium">
-        <span className="opacity-90">🚀 New: Windows Print Agent 2.0 is live! Automated printer routing now available.</span>
+    <>
+      {/* WhatsApp Floating Button */}
+      <a href="https://wa.me/917069525795?text=Hello%20QR%20Print%20Support"
+         className="whatsapp-float"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Chat on WhatsApp">
+
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path fill="currentColor"
+                    d="M19.11 17.21c-.29-.15-1.72-.85-1.99-.95-.27-.1-.47-.15-.67.15-.2.29-.77.95-.94 1.15-.17.2-.35.22-.64.07-1.72-.86-2.84-1.53-3.98-3.48-.3-.52.3-.48.86-1.6.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.29-1.04 1.02-1.04 2.48s1.07 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.08 1.72-.7 1.96-1.38.24-.68.24-1.26.17-1.38-.07-.12-.27-.2-.57-.35m-3.06 7.29h-.01a12.1 12.1 0 0 1-6.17-1.69l-.44-.26-4.59 1.2 1.22-4.47-.29-.46a12.08 12.08 0 1 1 10.28 5.68m10.3-22.2A14.46 14.46 0 0 0 16.05 0C8.08 0 1.59 6.49 1.59 14.46c0 2.55.67 5.04 1.93 7.23L1.47 29.2l7.69-2.02a14.45 14.45 0 0 0 6.89 1.76h.01c7.97 0 14.46-6.49 14.46-14.46 0-3.86-1.5-7.49-4.17-10.18"/>
+          </svg>
+          <span>WhatsApp</span>
+      </a>
+
+      <style dangerouslySetInnerHTML={{__html: `
+      .whatsapp-float {
+          position: fixed;
+          right: 20px;
+          bottom: 20px;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #25D366;
+          color: #fff;
+          padding: 12px 16px;
+          border-radius: 50px;
+          font-family: Arial, sans-serif;
+          font-size: 15px;
+          font-weight: 600;
+          text-decoration: none;
+          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+          transition: 0.3s ease;
+      }
+      .whatsapp-float svg { width: 25px; height: 25px; }
+      .whatsapp-float:hover { transform: translateY(-3px); background: #1ebe5d; color: #fff; }
+      @media (max-width: 600px) {
+          .whatsapp-float { right: 15px; bottom: 15px; padding: 12px; }
+          .whatsapp-float span { display: none; }
+          .whatsapp-float svg { width: 28px; height: 28px; }
+      }
+      .video-box {
+          width: 100%; max-width: 900px; margin: 20px auto;
+          background: #000; border-radius: 12px; overflow: hidden;
+          box-shadow: 0 8px 25px rgba(0,0,0,0.20);
+      }
+      .video-box video { width: 100%; height: auto; display: block; }
+      `}} />
+
+      <div className="notice">
+        <div className="container-xl">
+          <span><i className="bi bi-stars"></i> 5-day demo available for print shops</span>
+          <Link href="/signup">Create shop <i className="bi bi-arrow-right"></i></Link>  
+          Support Number : <a href="tel:+917069525795" className="support-number"> <i className="bi bi-phone"></i> +91 70695 25795 </a>
+        </div>
       </div>
 
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-slate-50/80 backdrop-blur-lg border-b border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <Printer className="text-white w-5 h-5" />
+      <nav className="navbar navbar-expand-lg sticky-top">
+        <div className="container-xl">
+          <Link className="brand" href="/"><span>QP</span><strong>Qr To Print</strong></Link>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Open menu">
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="mainNav">
+            <div className="navbar-nav ms-auto align-items-lg-center">
+              <a className="nav-link" href="#how">How it works</a>
+              <a className="nav-link" href="#services">Print services</a>
+              <a className="nav-link" href="#shops">For shops</a>
+              <a className="nav-link" href="#pricing">Pricing</a>
+              <Link className="nav-link" href="/signup">Setup guide</Link>
+              <Link className="nav-link" href="/signup">Agent program</Link>
+              <Link className="btn-login" href="/login"><i className="bi bi-box-arrow-in-right"></i> Shop login</Link>
             </div>
-            <span className="font-bold text-xl tracking-tight">ScanToPrint</span>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <a href="#how-it-works" className="hover:text-indigo-600 transition">How it works</a>
-            <a href="#features" className="hover:text-indigo-600 transition">Features</a>
-            <a href="#pricing" className="hover:text-indigo-600 transition">Pricing</a>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition">
-              Log in
-            </Link>
-            <Link href="/signup" className="text-sm font-medium bg-slate-900 text-white px-4 py-2 rounded-full hover:bg-slate-800 transition shadow-sm">
-              Start Free Trial
-            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-24 pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://grid.dapperui.pro/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-        <div className="max-w-7xl mx-auto px-6 relative text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-medium text-sm mb-8 ring-1 ring-inset ring-indigo-200">
-            <span className="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse"></span>
-            No apps required for customers
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 max-w-4xl mx-auto leading-tight">
-            The modern operating system for <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-cyan-500">print shops.</span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Eliminate WhatsApp clutter and USB viruses. Customers scan a QR code, upload files, and jobs are instantly routed to your Windows printers.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
-              Create your shop <ArrowRight className="w-5 h-5" />
-            </Link>
-            <a href="#how-it-works" className="w-full sm:w-auto px-8 py-4 bg-white text-slate-700 rounded-full font-semibold hover:bg-slate-50 transition border border-slate-200 flex items-center justify-center">
-              See how it works
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Value Prop / Steps Section */}
-      <section id="how-it-works" className="py-24 bg-white border-y border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">A seamless experience</h2>
-            <p className="text-slate-600">From the customer's phone directly to your paper.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12 relative">
-            {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-indigo-100 via-indigo-200 to-indigo-100 -z-10 -translate-y-1/2"></div>
-            
-            <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 relative group hover:-translate-y-1 transition duration-300">
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition">
-                <QrCode className="w-8 h-8" />
+      <main>
+        <section className="hero" id="home">
+          <div className="container-xl">
+            <div className="row align-items-center g-5">
+              <div className="col-lg-6 hero-content">
+                <div className="eyebrow"><span></span>Printing made simple for customers and shops</div>
+                <h1>Scan the QR.<br/><em>Send it to print.</em></h1>
+                <p className="lead">Customers upload from their phone, choose pages and payment, and the shop&apos;s Windows printer receives an organized print job.</p>
+                <div className="hero-actions">
+                  <Link className="btn-primary" href="/signup">Set up my shop <i className="bi bi-arrow-right"></i></Link>
+                  <a className="btn-secondary" href="#how"><i className="bi bi-play-circle"></i> See the process</a>
+                </div>
+                <div className="hero-points">
+                  <span><i className="bi bi-check-circle-fill"></i>No WhatsApp</span>
+                  <span><i className="bi bi-check-circle-fill"></i>No pen drive</span>
+                  <span><i className="bi bi-check-circle-fill"></i>Cash or online payment</span>
+                </div>
               </div>
-              <h3 className="text-xl font-bold mb-3">1. Scan QR</h3>
-              <p className="text-slate-600">Customer walks in and scans the unique QR code on your counter using any smartphone camera.</p>
-            </div>
-
-            <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 relative group hover:-translate-y-1 transition duration-300">
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center mb-6 text-cyan-600 group-hover:scale-110 transition">
-                <Smartphone className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">2. Upload & Set</h3>
-              <p className="text-slate-600">They select PDF or images, choose B&W/Color, select copies, and see the exact pricing instantly.</p>
-            </div>
-
-            <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 relative group hover:-translate-y-1 transition duration-300">
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition">
-                <Printer className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">3. Auto Print</h3>
-              <p className="text-slate-600">The lightweight Print Agent catches the job and sends it silently to your connected Windows printer.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bento Grid Features */}
-      <section id="features" className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Everything a print shop needs</h2>
-            <p className="text-slate-600 text-lg">Powerful features wrapped in a ridiculously simple interface.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-            <div className="md:col-span-2 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl p-8 text-white overflow-hidden relative shadow-sm border border-indigo-400/30">
-              <div className="relative z-10">
-                <LayoutDashboard className="w-10 h-10 mb-4 opacity-80" />
-                <h3 className="text-2xl font-bold mb-2">Live Shop Dashboard</h3>
-                <p className="text-indigo-100 max-w-sm">Monitor your queue in real-time. Retry failed prints, track daily revenue, and manage pricing rules from anywhere.</p>
-              </div>
-              <div className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 opacity-10">
-                <LayoutDashboard className="w-64 h-64" />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-              <Zap className="w-10 h-10 text-amber-500 mb-4" />
-              <h3 className="text-xl font-bold mb-2">Instant Sync</h3>
-              <p className="text-slate-600 text-sm">Orders hit your Windows Print Agent in milliseconds via WebSockets.</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-              <Cloud className="w-10 h-10 text-cyan-500 mb-4" />
-              <h3 className="text-xl font-bold mb-2">Cloud Storage</h3>
-              <p className="text-slate-600 text-sm">Secure, short-lived signed URLs ensure customer files are protected.</p>
-            </div>
-
-            <div className="md:col-span-2 bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-sm border border-slate-800">
-              <div className="relative z-10 flex h-full flex-col justify-between">
-                <div>
-                  <Shield className="w-10 h-10 mb-4 text-emerald-400" />
-                  <h3 className="text-2xl font-bold mb-2">Privacy First Auto-Delete</h3>
-                  <p className="text-slate-400 max-w-md">Once an order is printed, files are automatically swept from the server. Customers trust you, you save storage.</p>
+              <div className="col-lg-6">
+                <div className="product-visual">
+                  <img src="https://qrtoprint.in/assets/images/qr-print-hero.png" alt="Phone scanning QR and sending a document to a printer" />
+                  <div className="agent-pill">
+                    <span></span>
+                    <div>
+                      <strong>Print Agent connected</strong>
+                      <small>Job sent to Windows printer</small>
+                    </div>
+                    <i className="bi bi-printer"></i>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-24 bg-white border-t border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Simple, transparent pricing</h2>
-            <p className="text-slate-600">Grow your shop's revenue without giving up your margins.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-slate-50 rounded-3xl p-10 border border-slate-200">
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Starter</h3>
-              <p className="text-slate-500 mb-6 text-sm">Perfect for evaluating the workflow.</p>
-              <div className="mb-8">
-                <span className="text-5xl font-extrabold text-slate-900">₹0</span>
-                <span className="text-slate-500 font-medium">/14 days</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                {['Unlimited test prints', 'Live dashboard access', 'Basic B&W/Color routing', 'Community support'].map((feature) => (
-                  <li key={feature} className="flex items-center gap-3 text-slate-700">
-                    <CheckCircle2 className="w-5 h-5 text-indigo-600" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup" className="block w-full py-3 px-6 text-center rounded-xl font-semibold bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-300 transition">
-                Start Trial
-              </Link>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="bg-slate-900 rounded-3xl p-10 border border-slate-800 relative shadow-2xl shadow-indigo-900/20 ring-1 ring-indigo-500/50">
-              <div className="absolute top-0 right-8 -translate-y-1/2">
-                <span className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                  Most Popular
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Professional</h3>
-              <p className="text-slate-400 mb-6 text-sm">For busy cyber cafes and print shops.</p>
-              <div className="mb-8">
-                <span className="text-5xl font-extrabold text-white">₹499</span>
-                <span className="text-slate-400 font-medium">/month</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                {['Unlimited print jobs', 'Multi-printer auto routing', 'Aadhaar composite tools', 'Priority WhatsApp support', 'Custom shop branding'].map((feature) => (
-                  <li key={feature} className="flex items-center gap-3 text-slate-300">
-                    <CheckCircle2 className="w-5 h-5 text-cyan-400" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup" className="block w-full py-3 px-6 text-center rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition shadow-[0_0_20px_rgba(79,70,229,0.4)]">
-                Upgrade to Pro
-              </Link>
+        <section className="process-strip">
+          <div className="container-xl">
+            <div className="process-track">
+              <div><b>01</b><span><strong>Scan</strong><small>Shop QR code</small></span></div><i className="bi bi-arrow-right"></i>
+              <div><b>02</b><span><strong>Upload</strong><small>PDF or image</small></span></div><i className="bi bi-arrow-right"></i>
+              <div><b>03</b><span><strong>Pay</strong><small>Cash or online</small></span></div><i className="bi bi-arrow-right"></i>
+              <div><b>04</b><span><strong>Print</strong><small>Automatic job</small></span></div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-indigo-600 overflow-hidden relative">
-        <div className="absolute inset-0 bg-[url('https://grid.dapperui.pro/grid.svg')] bg-center opacity-20 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-        <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">Ready to modernize your counter?</h2>
-          <p className="text-indigo-100 text-xl mb-10 max-w-2xl mx-auto">
-            Join thousands of smart shop owners who have automated their print workflow. Setup takes less than 5 minutes.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="px-8 py-4 bg-white text-indigo-600 rounded-full font-bold hover:bg-slate-50 transition shadow-lg text-lg">
-              Create free account
-            </Link>
+        <section className="stats">
+          <div className="container-xl">
+            <div><strong>21139+</strong><span>shops registered</span></div>
+            <div><strong>551561+</strong><span>successful prints</span></div>
+            <div><strong>₹0.10</strong><span>wallet fee per job</span></div>
+            <div><strong>24/7</strong><span>customer uploads</span></div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-12">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-          <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <Printer className="w-6 h-6 text-indigo-500" />
-              <span className="font-bold text-xl text-white tracking-tight">ScanToPrint</span>
+        <section className="section how" id="how">
+          <div className="container-xl">
+            <div className="section-intro">
+              <div><span className="section-tag">Customer flow</span><h2>From phone to paper without counter confusion</h2></div>
+              <p>The print page asks only what is needed. The shop receives the file, settings, payment status and customer details in one job.</p>
             </div>
-            <p className="mb-4 max-w-sm text-sm">Automating local print shops with seamless mobile uploads and direct-to-printer routing.</p>
-            <p className="text-sm">Support: +91 70695 25795</p>
+            <div className="row g-4 flow-grid">
+              <div className="col-md-6 col-xl-3">
+                <article><i className="bi bi-qr-code-scan"></i><b>01</b><h3>Open the shop QR</h3><p>The QR opens that shop&apos;s private mobile print page.</p></article>
+              </div>
+              <div className="col-md-6 col-xl-3">
+                <article><i className="bi bi-cloud-arrow-up"></i><b>02</b><h3>Choose and upload</h3><p>Add a file, select print service and adjust the layout.</p></article>
+              </div>
+              <div className="col-md-6 col-xl-3">
+                <article><i className="bi bi-sliders"></i><b>03</b><h3>Confirm print details</h3><p>Choose pages, copies, color, paper and payment mode.</p></article>
+              </div>
+              <div className="col-md-6 col-xl-3">
+                <article><i className="bi bi-printer"></i><b>04</b><h3>Collect the print</h3><p>The Print Agent routes the approved job to the printer.</p></article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section services" id="services">
+          <div className="container-xl">
+            <div className="section-intro">
+              <div><span className="section-tag">More than documents</span><h2>Every common counter service in one print page</h2></div>
+              <p>Customers choose the job they need before uploading. Each service provides controls designed for that output.</p>
+            </div>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <article className="service-row">
+                  <i className="bi bi-file-earmark-text"></i>
+                  <div><h3>Document printing</h3><p>PDF and images with page range, copies, size and duplex controls.</p></div>
+                  <span className="bi bi-arrow-up-right"></span>
+                </article>
+              </div>
+              <div className="col-md-6">
+                <article className="service-row">
+                  <i className="bi bi-person-bounding-box"></i>
+                  <div><h3>Passport photos</h3><p>Crop and arrange up to 25 passport photos on one A4 sheet.</p></div>
+                  <span className="bi bi-arrow-up-right"></span>
+                </article>
+              </div>
+              <div className="col-md-6">
+                <article className="service-row">
+                  <i className="bi bi-credit-card-2-front"></i>
+                  <div><h3>ID / Aadhaar cards</h3><p>Place front and back together with drag, resize and rotate tools.</p></div>
+                  <span className="bi bi-arrow-up-right"></span>
+                </article>
+              </div>
+              <div className="col-md-6">
+                <article className="service-row">
+                  <i className="bi bi-file-earmark-person"></i>
+                  <div><h3>Resume printing</h3><p>Clean, quick resume printing from PDF or image files.</p></div>
+                  <span className="bi bi-arrow-up-right"></span>
+                </article>
+              </div>
+            </div>
+            <div className="service-note">
+              <i className="bi bi-shield-check"></i>
+              <div><strong>Customer files are handled for printing</strong><span>Uploaded files are removed after the print workflow completes.</span></div>
+              <Link href="/signup">Read setup and privacy details</Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="section shops" id="shops">
+          <div className="container-xl">
+            <div className="row g-5 align-items-center">
+              <div className="col-lg-5">
+                <span className="section-tag">Built for the shop counter</span>
+                <h2>Your printing operation, visible in one panel</h2>
+                <p className="shop-lead">Connect existing Windows printers and manage jobs, payments, wallet balance and reports without changing how customers reach the shop.</p>
+                <Link className="text-link" href="/signup">Start your 5-day demo <i className="bi bi-arrow-right"></i></Link>
+              </div>
+              <div className="col-lg-7">
+                <div className="control-list">
+                  <article>
+                    <span><i className="bi bi-printer-fill"></i></span>
+                    <div><h3>Printer and agent status</h3><p>Add B&W and color printers, see connection health and route each job correctly.</p></div>
+                  </article>
+                  <article>
+                    <span><i className="bi bi-receipt"></i></span>
+                    <div><h3>Jobs and searchable reports</h3><p>Track queued, picked, printed and failed jobs by date, customer, file or status.</p></div>
+                  </article>
+                  <article>
+                    <span><i className="bi bi-wallet2"></i></span>
+                    <div><h3>Wallet, packages and referrals</h3><p>Add wallet funds, purchase a package and review every transaction.</p></div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section pricing" id="pricing">
+          <div className="container-xl">
+            <div className="section-heading">
+              <span className="section-tag">Simple pricing</span>
+              <h2>Start small. Upgrade when your shop is ready.</h2>
+              <p>Every package uses the same QR print workflow and Shop Panel.</p>
+            </div>
+            <div className="row g-3 justify-content-center">
+              <div className="col-md-6 col-xl-3">
+                <article className="price-card ">
+                  <p className="plan-name">Demo</p><h3><sup>₹</sup>0</h3><small>5 days</small>
+                  <ul><li><i className="bi bi-check2"></i>Personal shop QR</li><li><i className="bi bi-check2"></i>Print Agent access</li><li><i className="bi bi-check2"></i>10 demo jobs</li></ul>
+                  <Link href="/signup">Start free <i className="bi bi-arrow-right"></i></Link>
+                </article>
+              </div>
+              <div className="col-md-6 col-xl-3">
+                <article className="price-card featured">
+                  <span className="popular">New</span><p className="plan-name">Starter</p><h3><sup>₹</sup>49</h3><small>per month</small>
+                  <ul><li><i className="bi bi-check2"></i>400 completed print jobs</li><li><i className="bi bi-check2"></i>No per-print fee</li><li><i className="bi bi-check2"></i>Reports and support</li></ul>
+                  <Link href="/signup">Choose starter <i className="bi bi-arrow-right"></i></Link>
+                </article>
+              </div>
+              <div className="col-md-6 col-xl-3">
+                <article className="price-card ">
+                  <p className="plan-name">Monthly</p><h3><sup>₹</sup>99</h3><small>per month</small>
+                  <ul><li><i className="bi bi-check2"></i>Unlimited print jobs</li><li><i className="bi bi-check2"></i>No per-print fee</li><li><i className="bi bi-check2"></i>Reports and support</li></ul>
+                  <Link href="/signup">Choose monthly <i className="bi bi-arrow-right"></i></Link>
+                </article>
+              </div>
+              <div className="col-md-6 col-xl-3">
+                <article className="price-card ">
+                  <p className="plan-name">Yearly</p><h3><sup>₹</sup>599</h3><small>365 days</small>
+                  <ul><li><i className="bi bi-check2"></i>365-day access</li><li><i className="bi bi-check2"></i>Full feature access</li><li><i className="bi bi-check2"></i>Updates and support</li></ul>
+                  <Link href="/signup">Choose yearly <i className="bi bi-arrow-right"></i></Link>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section proof">
+          <div className="container-xl">
+            <div className="proof-head">
+              <div><span className="section-tag">Why shops use it</span><h2>Less file handling.<br/>More organized printing.</h2></div>
+              <p>Qr To Print keeps each customer request complete from upload to printed status, so the operator knows exactly what to print and where to send it.</p>
+            </div>
+            <div className="swiper review-swiper">
+              <div className="swiper-wrapper">
+                <blockquote className="swiper-slide">
+                  <div className="review-icon"><i className="bi bi-phone"></i></div>
+                  <p>Customers upload directly from their phone, so documents no longer get buried inside chat conversations.</p>
+                  <div className="review-meta"><div><strong>Customer upload flow</strong><span>QR print page</span></div><small><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i></small></div>
+                </blockquote>
+                <blockquote className="swiper-slide">
+                  <div className="review-icon"><i className="bi bi-card-checklist"></i></div>
+                  <p>Payment, print settings and job status remain together, making counter work easier to check.</p>
+                  <div className="review-meta"><div><strong>Daily shop operations</strong><span>Reports and payments</span></div><small><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i></small></div>
+                </blockquote>
+                <blockquote className="swiper-slide">
+                  <div className="review-icon"><i className="bi bi-printer"></i></div>
+                  <p>B&W and color jobs can be routed to their configured printers without checking every file manually.</p>
+                  <div className="review-meta"><div><strong>Automatic printer routing</strong><span>Windows Print Agent</span></div><small><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i></small></div>
+                </blockquote>
+              </div>
+              <div className="swiper-pagination"></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section faq">
+          <div className="container-xl">
+            <div className="row g-5">
+              <div className="col-lg-4">
+                <span className="section-tag">Common questions</span>
+                <h2>Before you set up your shop</h2>
+                <p>Everything needed for the first test print is included in the setup guide.</p>
+                <Link href="/signup">Open full setup guide <i className="bi bi-arrow-right"></i></Link><br/>
+                Support Number : <a href="tel:+917069525795" className="support-number"> <i className="bi bi-phone"></i> +91 70695 25795 </a>
+              </div>
+              <div className="col-lg-8">
+                <div className="accordion accordion-flush" id="faqList">
+                  <div className="accordion-item">
+                    <h3 className="accordion-header"><button className="accordion-button " type="button" data-bs-toggle="collapse" data-bs-target="#faq0">Do I need a Wi-Fi printer?</button></h3>
+                    <div id="faq0" className="accordion-collapse collapse show" data-bs-parent="#faqList"><div className="accordion-body">No. The Windows Print Agent can use an installed USB or network printer.</div></div>
+                  </div>
+                  <div className="accordion-item">
+                    <h3 className="accordion-header"><button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">Can customers pay cash?</button></h3>
+                    <div id="faq1" className="accordion-collapse collapse " data-bs-parent="#faqList"><div className="accordion-body">Yes. A shop can enable cash, online payment, or both payment methods.</div></div>
+                  </div>
+                  <div className="accordion-item">
+                    <h3 className="accordion-header"><button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">Which files can customers upload?</button></h3>
+                    <div id="faq2" className="accordion-collapse collapse " data-bs-parent="#faqList"><div className="accordion-body">The print page supports PDF, JPG and PNG files with service-specific controls.</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="cta">
+          <div className="container-xl">
+            <div><span>Ready for your first test print?</span><h2>Create your shop QR and connect your printer.</h2></div>
+            <div><Link href="/signup">Start free demo <i className="bi bi-arrow-right"></i></Link><Link href="/login">Shop login</Link></div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div className="container-xl footer-grid">
+          <div>
+            <Link className="brand footer-brand" href="/"><span>QP</span><strong>Qr To Print</strong></Link>
+            <p>Mobile uploads and automatic printing for local print shops and cyber cafes.</p>
+            <a href="tel:+917069525795" className="support-number"><i className="bi bi-telephone"></i> +91 70695 25795</a>
           </div>
           <div>
-            <strong className="text-white font-semibold mb-4 block">Platform</strong>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#how-it-works" className="hover:text-white transition">How it works</a></li>
-              <li><a href="#features" className="hover:text-white transition">Features</a></li>
-              <li><a href="#pricing" className="hover:text-white transition">Pricing</a></li>
-            </ul>
+            <strong>Product</strong>
+            <a href="#how">How it works</a>
+            <a href="#services">Print services</a>
+            <a href="#pricing">Pricing</a>
           </div>
           <div>
-            <strong className="text-white font-semibold mb-4 block">Legal</strong>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="hover:text-white transition">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-white transition">Terms of Service</Link></li>
-              <li><Link href="#" className="hover:text-white transition">Refund Policy</Link></li>
-            </ul>
+            <strong>Shop owners</strong>
+            <Link href="/signup">Register shop</Link>
+            <Link href="/login">Shop login</Link>
+            <Link href="/signup">Setup guide</Link>
+          </div>
+          <div>
+            <strong>Company</strong>
+            <Link href="/signup">Agent program</Link>
+            <a href="#shops">Shop features</a>
+            <a href="https://wa.me/917069525795" target="_blank" rel="noopener noreferrer">Contact support</a>
+          </div>
+          <div>
+            <strong>Legal</strong>
+            <Link href="/signup">Terms & Conditions</Link>
+            <Link href="/signup">Privacy Policy</Link>
+            <Link href="/signup">Refund Policy</Link>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-          <p>© {new Date().getFullYear()} ScanToPrint. Kaushik Savaliya. All rights reserved.</p>
+        <div className="container-xl copyright">
+          <span>© 2026 Qr To Print. Kaushik Savaliya. All rights reserved.</span>
+          <div className="copyright-links">
+            <Link href="/signup">Terms</Link>
+            <Link href="/signup">Privacy</Link>
+            <Link href="/signup">Refunds</Link>
+            <a href="#home">Back to top <i className="bi bi-arrow-up"></i></a>
+          </div>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
