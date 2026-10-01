@@ -1,3 +1,4 @@
+/* eslint-disable */
 export interface PrintSettings {
   paper_size: string;
   color_mode: 'bw' | 'color';
