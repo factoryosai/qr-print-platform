@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import CssLoader from '@/components/CssLoader'
 
 export const metadata: Metadata = {
   title: 'Qr To Print | Scan, Upload, Print',
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+        <CssLoader />
       </head>
       <body>{children}</body>
     </html>
