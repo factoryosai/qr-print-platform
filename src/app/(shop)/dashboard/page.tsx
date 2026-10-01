@@ -7,114 +7,92 @@ import Link from 'next/link';
 export default function DashboardHome() {
   const [orders, setOrders] = useState<any[]>([]);
   const [shop, setShop] = useState<any>(null);
-  const [stats, setStats] = useState({ today: 0, total: 0, printed: 0, failed: 0 });
   const supabase = createClient();
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: shopData } = await supabase.from('shops').select('*').eq('owner_user_id', user.id).single();
-      if (!shopData) return;
-      setShop(shopData);
-
-      const { data: ordersData } = await supabase.from('orders').select('*').eq('shop_id', shopData.id).order('created_at', { ascending: false }).limit(20);
-      if (ordersData) {
-        setOrders(ordersData);
-        const today = new Date().toDateString();
-        setStats({
-          today: ordersData.filter(o => new Date(o.created_at).toDateString() === today).length,
-          total: ordersData.length,
-          printed: ordersData.filter(o => o.print_status === 'printed').length,
-          failed: ordersData.filter(o => o.print_status === 'failed').length,
-        });
-      }
+      const { data: s } = await supabase.from('shops').select('*').eq('owner_user_id', user.id).single();
+      if (!s) return;
+      setShop(s);
+      const { data: o } = await supabase.from('orders').select('*').eq('shop_id', s.id).order('created_at', { ascending: false }).limit(30);
+      if (o) setOrders(o);
     };
     init();
   }, []);
 
+  const today = new Date().toDateString();
+  const stats = {
+    today: orders.filter(o => new Date(o.created_at).toDateString() === today).length,
+    total: orders.length,
+    printed: orders.filter(o => o.print_status === 'printed').length,
+    queued: orders.filter(o => o.print_status === 'queued').length,
+  };
+
   const statusBadge = (s: string) => {
-    const map: any = { queued: 'warning', sending_to_printer: 'info', printing: 'primary', printed: 'success', failed: 'danger', cancelled: 'secondary' };
-    return <span className={`badge bg-${map[s] || 'secondary'}`}>{s}</span>;
+    const cls: any = { queued: 'badge-queued', printed: 'badge-printed', failed: 'badge-failed', printing: 'badge-printing', cancelled: 'badge-cancelled', sending_to_printer: 'badge-printing' };
+    return <span className={cls[s] || 'badge-cancelled'}>{s}</span>;
   };
 
   return (
     <>
-      <div className="shop-topbar">
-        <div>
-          <div className="shop-topbar-label">Shop Panel</div>
-          <h1>Dashboard</h1>
-        </div>
+      <div className="sp-topbar">
+        <div className="sp-topbar-left"><small>Shop Panel</small><h1>Dashboard</h1></div>
         {shop && (
-          <Link href={`/print/${shop.id}`} target="_blank" className="btn btn-dark btn-sm fw-bold">
-            Open Print Page
+          <Link href={`/print/${shop.id}`} target="_blank" className="btn-sp btn-sp-dark">
+            Open Print Page <i className="bi bi-arrow-up-right"></i>
           </Link>
         )}
       </div>
-
-      <div className="shop-content">
-        {/* Stats */}
-        <div className="row g-3 mb-4">
+      <div className="sp-body">
+        <div className="stat-row">
           {[
-            { label: "Today's Jobs", value: stats.today, icon: 'bi-calendar-check', color: '#2563eb' },
-            { label: 'Total Orders', value: stats.total, icon: 'bi-receipt', color: '#059669' },
-            { label: 'Printed', value: stats.printed, icon: 'bi-printer', color: '#7c3aed' },
-            { label: 'Failed', value: stats.failed, icon: 'bi-exclamation-triangle', color: '#dc2626' },
-          ].map((s) => (
-            <div key={s.label} className="col-6 col-xl-3">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body d-flex align-items-center gap-3">
-                  <div style={{ width: 44, height: 44, borderRadius: 10, background: s.color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <i className={`bi ${s.icon}`} style={{ fontSize: 20, color: s.color }}></i>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 22, fontWeight: 700 }}>{s.value}</div>
-                    <div style={{ fontSize: 12, color: '#6b7280' }}>{s.label}</div>
-                  </div>
-                </div>
-              </div>
+            { label: "Today's Jobs", val: stats.today, icon: 'bi-calendar-check', bg: '#eff6ff', color: '#2563eb' },
+            { label: 'Total Orders', val: stats.total, icon: 'bi-receipt', bg: '#f5f3ff', color: '#7c3aed' },
+            { label: 'Printed', val: stats.printed, icon: 'bi-printer', bg: '#f0fdf4', color: '#059669' },
+            { label: 'In Queue', val: stats.queued, icon: 'bi-clock', bg: '#fffbeb', color: '#d97706' },
+          ].map(s => (
+            <div key={s.label} className="stat-card">
+              <div className="stat-icon" style={{ background: s.bg }}><i className={`bi ${s.icon}`} style={{ color: s.color }}></i></div>
+              <div><div className="stat-val">{s.val}</div><div className="stat-label">{s.label}</div></div>
             </div>
           ))}
         </div>
 
-        {/* Live Queue */}
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
-            <h5 className="mb-0 fw-bold">Live Print Queue</h5>
-            <span className="badge bg-success-subtle text-success fw-semibold"><i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }}></i>Live</span>
+        <div className="table-card">
+          <div className="table-card-header">
+            <h2>Live Print Queue</h2>
+            <span style={{ fontSize: 12, color: '#059669', fontWeight: 700 }}><i className="bi bi-circle-fill" style={{ fontSize: 8, marginRight: 4 }}></i>Live</span>
           </div>
-          <div className="table-responsive">
-            <table className="table table-hover mb-0 align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>Order #</th>
-                  <th>Customer</th>
-                  <th>Service</th>
-                  <th>Settings</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Time</th>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#f5f7f8' }}>
+                  {['Order #', 'Customer', 'Service', 'Settings', 'Amount', 'Status', 'Time'].map(h => (
+                    <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 700, fontSize: 12, color: '#687080', borderBottom: '1px solid #dfe3e8' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {orders.length === 0 && (
-                  <tr><td colSpan={7} className="text-center text-muted py-5">
-                    <i className="bi bi-inbox" style={{ fontSize: 32, display: 'block', marginBottom: 8 }}></i>
+                  <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#687080' }}>
+                    <i className="bi bi-inbox" style={{ fontSize: 32, display: 'block', marginBottom: 8, opacity: 0.4 }}></i>
                     No orders yet. Share your print page to get started!
                   </td></tr>
                 )}
                 {orders.map(o => (
-                  <tr key={o.id}>
-                    <td><span className="fw-bold font-monospace">{o.order_number}</span></td>
-                    <td>
-                      <div className="fw-semibold">{o.customer_name}</div>
-                      <small className="text-muted">{o.mobile}</small>
+                  <tr key={o.id} style={{ borderBottom: '1px solid #f5f7f8' }}>
+                    <td style={{ padding: '12px 16px', fontWeight: 700, fontFamily: 'monospace', fontSize: 12 }}>{o.order_number}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <div style={{ fontWeight: 600 }}>{o.customer_name}</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>{o.mobile}</div>
                     </td>
-                    <td><span className="badge bg-light text-dark border">{o.service_type}</span></td>
-                    <td className="small text-muted">{o.print_settings?.paper_size} · {o.print_settings?.color_mode} · {o.print_settings?.copies}x</td>
-                    <td className="fw-bold">₹{o.total_amount}</td>
-                    <td>{statusBadge(o.print_status)}</td>
-                    <td className="small text-muted">{new Date(o.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td style={{ padding: '12px 16px' }}><span style={{ background: '#f3f4f6', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>{o.service_type}</span></td>
+                    <td style={{ padding: '12px 16px', color: '#687080', fontSize: 12 }}>{o.print_settings?.paper_size} · {o.print_settings?.color_mode?.toUpperCase()} · {o.print_settings?.copies}x</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 700 }}>₹{o.total_amount}</td>
+                    <td style={{ padding: '12px 16px' }}>{statusBadge(o.print_status)}</td>
+                    <td style={{ padding: '12px 16px', color: '#9ca3af', fontSize: 12 }}>{new Date(o.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</td>
                   </tr>
                 ))}
               </tbody>

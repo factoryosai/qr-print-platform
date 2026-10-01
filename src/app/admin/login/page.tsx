@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 
 const ADMIN_EMAIL = 'kaushiksavaliya909@gmail.com';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -16,55 +18,50 @@ export default function AdminLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (email !== ADMIN_EMAIL) {
-      setError('Access denied. Admin only.');
-      setLoading(false);
-      return;
-    }
-
+    setLoading(true); setError('');
+    if (email !== ADMIN_EMAIL) { setError('Access denied. This panel is for admin only.'); setLoading(false); return; }
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
-    } else {
-      router.push('/admin');
-    }
+    if (authError) { setError(authError.message); setLoading(false); }
+    else { router.push('/admin'); }
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 400, padding: '0 16px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ width: 52, height: 52, background: '#dc2626', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 22, fontWeight: 800, color: 'white' }}>A</div>
-          <h1 style={{ color: 'white', fontSize: 22, fontWeight: 700, margin: 0 }}>Admin Access</h1>
-          <p style={{ color: '#6b7280', fontSize: 13, marginTop: 6 }}>QR To Print · Super Admin Panel</p>
-        </div>
-
-        <div style={{ background: '#111', borderRadius: 16, border: '1px solid #1f1f1f', padding: 28 }}>
-          {error && <div style={{ background: '#450a0a', border: '1px solid #dc2626', color: '#fca5a5', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>{error}</div>}
+    <>
+      <header className="auth-header">
+        <Link href="/" className="auth-brand"><span style={{ background: '#7c3aed' }}>A</span><b>Admin Panel</b></Link>
+        <Link href="/">Back to website</Link>
+      </header>
+      <main className="auth-shell">
+        <section className="auth-form">
+          <div className="form-heading">
+            <p>Super admin access</p>
+            <h1>Admin login</h1>
+            <span>Restricted to platform administrators only.</span>
+          </div>
+          {error && <div className="alert-error" style={{ marginTop: 16 }}>{error}</div>}
           <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 6 }}>Admin Email</label>
-              <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2d2d2d', borderRadius: 8, padding: '10px 14px', color: 'white', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-                placeholder="admin@example.com" />
+            <label htmlFor="email">Admin email</label>
+            <input id="email" type="email" required autoFocus value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@example.com" />
+            <label htmlFor="password">Password</label>
+            <div className="password-field">
+              <input id="password" type={showPw ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} />
+              <button type="button" onClick={() => setShowPw(!showPw)}>{showPw ? 'Hide' : 'Show'}</button>
             </div>
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 6 }}>Password</label>
-              <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2d2d2d', borderRadius: 8, padding: '10px 14px', color: 'white', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-                placeholder="••••••••" />
-            </div>
-            <button type="submit" disabled={loading}
-              style={{ width: '100%', background: '#dc2626', color: 'white', border: 'none', borderRadius: 8, padding: '11px', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-              {loading ? 'Signing in...' : 'Sign In to Admin Panel'}
+            <button className="auth-submit" type="submit" disabled={loading} style={{ background: '#7c3aed' }}>
+              {loading ? 'Signing in…' : 'Sign in to Admin Panel'}
             </button>
           </form>
-        </div>
-      </div>
-    </div>
+        </section>
+        <aside className="auth-context">
+          <div className="context-mark" style={{ background: '#7c3aed' }}>A</div>
+          <h2>Platform control center.</h2>
+          <div className="context-list">
+            <div><b>01</b><span>View all shops and orders</span></div>
+            <div><b>02</b><span>Monitor print agents</span></div>
+            <div><b>03</b><span>Platform-wide stats</span></div>
+          </div>
+        </aside>
+      </main>
+    </>
   );
 }
