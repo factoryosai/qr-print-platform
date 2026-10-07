@@ -9,6 +9,7 @@ export default function PrintersPage() {
   const [shop, setShop] = useState<any>(null);
   const [newPrinterName, setNewPrinterName] = useState('');
   const [adding, setAdding] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const supabase = createClient();
 
   useEffect(() => {
@@ -39,15 +40,22 @@ export default function PrintersPage() {
     e.preventDefault();
     if (!newPrinterName || !shop) return;
     setAdding(true);
-    await supabase.from('printers').insert({
+    setErrorMsg('');
+    const { error } = await supabase.from('printers').insert({
       shop_id: shop.id,
       name: newPrinterName,
-      is_color: true,
-      can_duplex: true
+      capability: 'bw_color',
+      supports_duplex: true
     });
-    const { data: p } = await supabase.from('printers').select('*').eq('shop_id', shop.id);
-    if (p) setPrinters(p);
-    setNewPrinterName('');
+    
+    if (error) {
+      console.error(error);
+      setErrorMsg(error.message);
+    } else {
+      const { data: p } = await supabase.from('printers').select('*').eq('shop_id', shop.id);
+      if (p) setPrinters(p);
+      setNewPrinterName('');
+    }
     setAdding(false);
   };
 
@@ -57,9 +65,13 @@ export default function PrintersPage() {
     setPrinters(printers.filter(p => p.id !== id));
   };
 
-  const toggleCapability = async (id: string, field: 'is_color' | 'can_duplex', current: boolean) => {
-    await supabase.from('printers').update({ [field]: !current }).eq('id', id);
-    setPrinters(printers.map(p => p.id === id ? { ...p, [field]: !current } : p));
+  const toggleCapability = async (id: string, field: 'supports_duplex' | 'capability', currentVal: any) => {
+    let newVal;
+    if (field === 'supports_duplex') newVal = !currentVal;
+    if (field === 'capability') newVal = currentVal === 'bw_color' ? 'bw' : 'bw_color';
+
+    await supabase.from('printers').update({ [field]: newVal }).eq('id', id);
+    setPrinters(printers.map(p => p.id === id ? { ...p, [field]: newVal } : p));
   };
 
   const isOnline = agentStatus?.is_online;
@@ -90,7 +102,7 @@ export default function PrintersPage() {
                 {isOnline ? 'Online' : 'Offline'}
               </span>
             </div>
-            {isOnline && (
+            {isOnline && agentStatus?.last_heartbeat && (
               <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #dfe3e8', fontSize: 12, color: '#687080' }}>
                 <strong>Last heartbeat:</strong> {new Date(agentStatus.last_heartbeat).toLocaleString('en-IN')} <br />
                 <strong>PC User:</strong> {agentStatus.hostname || 'Unknown'} <br />
@@ -106,6 +118,7 @@ export default function PrintersPage() {
             <h2>Add Windows Printer</h2>
           </div>
           <div style={{ padding: 20 }}>
+            {errorMsg && <div className="alert-error" style={{ marginBottom: 12 }}>{errorMsg}</div>}
             <form onSubmit={addPrinter} style={{ display: 'flex', gap: 12, maxWidth: 500 }}>
               <input 
                 type="text" 
@@ -155,16 +168,16 @@ export default function PrintersPage() {
                     <td style={{ padding: '12px 16px' }}>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button 
-                          onClick={() => toggleCapability(p.id, 'is_color', p.is_color)}
+                          onClick={() => toggleCapability(p.id, 'capability', p.capability)}
                           className="btn-sp btn-sp-outline" 
-                          style={{ padding: '4px 8px', fontSize: 11, background: p.is_color ? '#f0fdf4' : '#fff', borderColor: p.is_color ? '#bbf7d0' : '#dfe3e8' }}>
-                          <i className={`bi bi-check2 ${p.is_color ? 'text-success' : ''}`}></i> Color
+                          style={{ padding: '4px 8px', fontSize: 11, background: p.capability === 'bw_color' ? '#f0fdf4' : '#fff', borderColor: p.capability === 'bw_color' ? '#bbf7d0' : '#dfe3e8' }}>
+                          <i className={`bi bi-check2 ${p.capability === 'bw_color' ? 'text-success' : ''}`}></i> Color
                         </button>
                         <button 
-                          onClick={() => toggleCapability(p.id, 'can_duplex', p.can_duplex)}
+                          onClick={() => toggleCapability(p.id, 'supports_duplex', p.supports_duplex)}
                           className="btn-sp btn-sp-outline" 
-                          style={{ padding: '4px 8px', fontSize: 11, background: p.can_duplex ? '#f0fdf4' : '#fff', borderColor: p.can_duplex ? '#bbf7d0' : '#dfe3e8' }}>
-                          <i className={`bi bi-check2 ${p.can_duplex ? 'text-success' : ''}`}></i> Duplex
+                          style={{ padding: '4px 8px', fontSize: 11, background: p.supports_duplex ? '#f0fdf4' : '#fff', borderColor: p.supports_duplex ? '#bbf7d0' : '#dfe3e8' }}>
+                          <i className={`bi bi-check2 ${p.supports_duplex ? 'text-success' : ''}`}></i> Duplex
                         </button>
                       </div>
                     </td>
