@@ -1,145 +1,119 @@
 'use client';
-
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 
-const STATUS_STEPS = [
-  { key: 'queued', label: 'Queued', icon: 'bi-clock', desc: 'Your job is in the queue' },
-  { key: 'sending_to_printer', label: 'Sending', icon: 'bi-arrow-right-circle', desc: 'Sending to printer' },
-  { key: 'printing', label: 'Printing', icon: 'bi-printer', desc: 'Currently printing...' },
-  { key: 'printed', label: 'Printed ✓', icon: 'bi-check-circle-fill', desc: 'Ready for collection!' },
-];
-
-export default function OrderTrackingPage({ params }: { params: { orderId: string } }) {
+export default function OrderTracking({ params }: { params: { orderId: string } }) {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchOrder = async () => {
-      const { data } = await supabase.from('orders').select('*, shops(name, address)').eq('id', params.orderId).single();
-      if (data) setOrder(data);
-      setLoading(false);
+      try {
+        const response = await fetch(`/api/order-status/${params.orderId}`);
+        const data = await response.json();
+        if (data.order) {
+          setOrder(data.order);
+        }
+      } catch (error) {
+        console.error('Error fetching order:', error);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchOrder();
-
-    const channel = supabase.channel(`order-${params.orderId}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${params.orderId}` }, (payload) => {
-        setOrder((prev: any) => ({ ...prev, ...payload.new }));
-      }).subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    const intervalId = setInterval(fetchOrder, 5000);
+    return () => clearInterval(intervalId);
   }, [params.orderId]);
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', color: '#9ca3af' }}>Loading order...</div>
-    </div>
-  );
-
-  if (!order) return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>❌</div>
-        <h3>Order not found</h3>
-        <p style={{ color: '#9ca3af' }}>This order may have expired or been deleted.</p>
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f5f7f8', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading order details...</p>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const currentStep = STATUS_STEPS.findIndex(s => s.key === order.print_status);
-  const isCancelled = order.print_status === 'cancelled';
-  const isFailed = order.print_status === 'failed';
+  if (!order) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f5f7f8', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '16px' }}>
+        <h2 style={{ color: '#111827', fontSize: '24px', margin: 0 }}>Order Not Found</h2>
+        <p style={{ color: '#6b7280' }}>The requested order could not be found.</p>
+      </div>
+    );
+  }
+
+  const steps = ['queued', 'printing', 'printed'];
+  const currentStepIndex = steps.indexOf(order.status) !== -1 ? steps.indexOf(order.status) : 0;
+  
+  const isFailed = order.status === 'failed' || order.status === 'cancelled';
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        .pulse { animation: pulse 2s infinite; }
-        .track-step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 20px; }
-        .track-step-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; }
-        .track-step-line { width: 2px; background: #e5e7eb; flex-shrink: 0; height: 20px; margin-left: 17px; }
-      `}} />
-
-      <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
-        {/* Header */}
-        <div style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, background: '#2563eb', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 14 }}>QP</div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{(order.shops as any)?.name}</div>
-            <div style={{ fontSize: 12, color: '#9ca3af' }}>Order Tracking</div>
-          </div>
+    <div style={{ minHeight: '100vh', background: '#f5f7f8', padding: '40px 20px', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', background: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+        
+        <div style={{ padding: '32px', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>
+            Order {order.order_number || `#${order.id.substring(0,6)}`}
+          </h1>
+          <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>
+            {order.customer_name} • {order.service_type || 'Print Service'}
+          </p>
         </div>
 
-        <div style={{ maxWidth: 480, margin: '0 auto', padding: '24px 16px' }}>
-          {/* Status Hero */}
-          <div style={{
-            background: isCancelled ? '#fef2f2' : isFailed ? '#fef2f2' : order.print_status === 'printed' ? '#f0fdf4' : '#eff6ff',
-            border: `2px solid ${isCancelled || isFailed ? '#fecaca' : order.print_status === 'printed' ? '#bbf7d0' : '#bfdbfe'}`,
-            borderRadius: 16, padding: '24px', textAlign: 'center', marginBottom: 24,
-          }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>
-              {isCancelled ? '🚫' : isFailed ? '❌' : order.print_status === 'printed' ? '✅' : order.print_status === 'printing' ? '🖨️' : '⏳'}
+        <div style={{ padding: '32px', borderBottom: '1px solid #e5e7eb' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#111827', margin: '0 0 24px' }}>Status</h2>
+          
+          {isFailed ? (
+            <div style={{ background: '#fee2e2', color: '#dc2626', padding: '16px', borderRadius: '8px', textAlign: 'center', fontWeight: 500 }}>
+              Order {order.status === 'failed' ? 'Failed' : 'Cancelled'}
             </div>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b7280', marginBottom: 4 }}>Order {order.order_number}</div>
-            <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>
-              {isCancelled ? 'Cancelled' : isFailed ? 'Print Failed' : order.print_status === 'printed' ? 'Ready to Collect!' : order.print_status === 'printing' ? 'Printing Now...' : 'In Queue'}
-            </div>
-            {order.print_status === 'printing' && <div className="pulse" style={{ fontSize: 12, color: '#2563eb' }}>Live update • refreshing automatically</div>}
-            {order.print_status === 'printed' && <div style={{ fontSize: 13, color: '#166534', marginTop: 4 }}>Collect from the shop counter</div>}
-            {isFailed && <div style={{ fontSize: 13, color: '#dc2626', marginTop: 4 }}>{order.failure_reason || 'Print job failed. Please inform the shop staff.'}</div>}
-          </div>
-
-          {/* Progress Steps */}
-          {!isCancelled && !isFailed && (
-            <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', padding: '20px', marginBottom: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 16 }}>Progress</div>
-              {STATUS_STEPS.map((s, i) => {
-                const isDone = i < currentStep || order.print_status === 'printed';
-                const isCurrent = i === currentStep && order.print_status !== 'printed';
+          ) : (
+            <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '16px', left: '10%', right: '10%', height: '2px', background: '#e5e7eb', zIndex: 0 }}></div>
+              <div style={{ position: 'absolute', top: '16px', left: '10%', width: `${(currentStepIndex / (steps.length - 1)) * 80}%`, height: '2px', background: '#f43f64', zIndex: 1, transition: 'width 0.5s ease' }}></div>
+              
+              {steps.map((step, index) => {
+                const isActive = index <= currentStepIndex;
+                const isCurrent = index === currentStepIndex;
                 return (
-                  <div key={s.key}>
-                    <div className="track-step">
-                      <div className="track-step-icon" style={{ background: isDone || isCurrent ? '#2563eb' : '#f3f4f6', color: isDone || isCurrent ? 'white' : '#9ca3af' }}>
-                        <i className={`bi ${isDone ? 'bi-check-lg' : s.icon}`}></i>
-                      </div>
-                      <div style={{ paddingTop: 6 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: isDone || isCurrent ? '#111' : '#9ca3af' }}>{s.label}</div>
-                        <div style={{ fontSize: 11, color: '#9ca3af' }}>{s.desc}</div>
-                      </div>
+                  <div key={step} style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isActive ? '#f43f64' : '#f3f4f6', color: isActive ? 'white' : '#9ca3af', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '14px', border: `2px solid ${isActive ? '#f43f64' : '#e5e7eb'}`, transition: 'all 0.3s ease' }}>
+                      {isActive ? <i className="bi bi-check"></i> : index + 1}
                     </div>
-                    {i < STATUS_STEPS.length - 1 && <div className="track-step-line"></div>}
+                    <span style={{ fontSize: '14px', fontWeight: isCurrent ? 600 : 500, color: isCurrent ? '#111827' : '#6b7280', textTransform: 'capitalize' }}>
+                      {step}
+                    </span>
                   </div>
                 );
               })}
             </div>
           )}
+        </div>
 
-          {/* Order Details */}
-          <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', padding: '16px 20px', marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Order Details</div>
-            {[
-              ['Customer', order.customer_name],
-              ['Mobile', order.mobile],
-              ['Service', order.service_type],
-              ['Color', order.print_settings?.color_mode === 'bw' ? 'Black & White' : 'Color'],
-              ['Paper', order.print_settings?.paper_size],
-              ['Copies', order.print_settings?.copies],
-              ['Amount to Pay', `₹${order.total_amount}`],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, paddingBottom: 8, marginBottom: 8, borderBottom: '1px solid #f9fafb' }}>
-                <span style={{ color: '#6b7280' }}>{k}</span>
-                <span style={{ fontWeight: 600 }}>{String(v || '—')}</span>
+        <div style={{ padding: '32px', borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#111827', margin: '0 0 16px' }}>Print Settings</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            {order.print_settings && Object.entries(order.print_settings).map(([key, value]) => (
+              <div key={key}>
+                <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>{key}</div>
+                <div style={{ fontSize: '15px', color: '#111827', fontWeight: 500 }}>{String(value)}</div>
               </div>
             ))}
           </div>
-
-          {/* Pay note */}
-          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 16px', textAlign: 'center', fontSize: 13, color: '#92400e' }}>
-            💵 Pay <strong>₹{order.total_amount}</strong> at the counter when collecting
-          </div>
         </div>
+
+        <div style={{ padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Amount to pay</div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#111827' }}>₹{order.total_amount || 0}</div>
+          </div>
+          <Link href={`/${order.shop_id}`} style={{ padding: '12px 24px', background: 'white', color: '#374151', border: '1px solid #d1d5db', borderRadius: '8px', textDecoration: 'none', fontWeight: 500, fontSize: '14px' }}>
+            Back to Home
+          </Link>
+        </div>
+
       </div>
-    </>
+    </div>
   );
 }

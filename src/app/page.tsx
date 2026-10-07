@@ -1,386 +1,344 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-export default function Home() {
+export default function LandingPage() {
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in-visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const hiddenElements = document.querySelectorAll('.fade-in-hidden');
+    hiddenElements.forEach((el) => observerRef.current?.observe(el));
+
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
+  }, []);
+
   return (
     <>
-      {/* WhatsApp Floating Button */}
-      <a href="https://wa.me/917069525795?text=Hello%20QR%20Print%20Support"
-         className="whatsapp-float"
-         target="_blank"
-         rel="noopener noreferrer"
-         aria-label="Chat on WhatsApp">
-
-          <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path fill="currentColor"
-                    d="M19.11 17.21c-.29-.15-1.72-.85-1.99-.95-.27-.1-.47-.15-.67.15-.2.29-.77.95-.94 1.15-.17.2-.35.22-.64.07-1.72-.86-2.84-1.53-3.98-3.48-.3-.52.3-.48.86-1.6.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.29-1.04 1.02-1.04 2.48s1.07 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.08 1.72-.7 1.96-1.38.24-.68.24-1.26.17-1.38-.07-.12-.27-.2-.57-.35m-3.06 7.29h-.01a12.1 12.1 0 0 1-6.17-1.69l-.44-.26-4.59 1.2 1.22-4.47-.29-.46a12.08 12.08 0 1 1 10.28 5.68m10.3-22.2A14.46 14.46 0 0 0 16.05 0C8.08 0 1.59 6.49 1.59 14.46c0 2.55.67 5.04 1.93 7.23L1.47 29.2l7.69-2.02a14.45 14.45 0 0 0 6.89 1.76h.01c7.97 0 14.46-6.49 14.46-14.46 0-3.86-1.5-7.49-4.17-10.18"/>
-          </svg>
-          <span>WhatsApp</span>
-      </a>
-
       <style dangerouslySetInnerHTML={{__html: `
-      .whatsapp-float {
-          position: fixed;
-          right: 20px;
-          bottom: 20px;
-          z-index: 9999;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: #25D366;
-          color: #fff;
-          padding: 12px 16px;
-          border-radius: 50px;
-          font-family: Arial, sans-serif;
-          font-size: 15px;
-          font-weight: 600;
-          text-decoration: none;
-          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
-          transition: 0.3s ease;
-      }
-      .whatsapp-float svg { width: 25px; height: 25px; }
-      .whatsapp-float:hover { transform: translateY(-3px); background: #1ebe5d; color: #fff; }
-      @media (max-width: 600px) {
-          .whatsapp-float { right: 15px; bottom: 15px; padding: 12px; }
-          .whatsapp-float span { display: none; }
-          .whatsapp-float svg { width: 28px; height: 28px; }
-      }
-      .video-box {
-          width: 100%; max-width: 900px; margin: 20px auto;
-          background: #000; border-radius: 12px; overflow: hidden;
-          box-shadow: 0 8px 25px rgba(0,0,0,0.20);
-      }
-      .video-box video { width: 100%; height: auto; display: block; }
+        :root {
+          --qp-coral: #f43f64;
+          --qp-blue: #1d4ed8;
+        }
+        body {
+          font-family: 'Inter', sans-serif;
+          scroll-behavior: smooth;
+        }
+        .text-coral { color: var(--qp-coral); }
+        .bg-coral { background-color: var(--qp-coral); color: white; }
+        .btn-coral { background-color: var(--qp-coral); color: white; border-radius: 8px; padding: 10px 24px; font-weight: 600; transition: all 0.2s; }
+        .btn-coral:hover { background-color: #e11d48; color: white; transform: translateY(-2px); }
+        .btn-outline-dark { border-radius: 8px; padding: 10px 24px; font-weight: 600; }
+        
+        .navbar-custom { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #eee; }
+        .qp-logo { display: flex; align-items: center; font-weight: 800; font-size: 1.5rem; color: #111; text-decoration: none; }
+        .qp-logo-icon { background: var(--qp-coral); color: white; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; margin-right: 8px; font-size: 1.2rem; }
+        
+        .hero-section { background: linear-gradient(180deg, #ffffff 0%, #fff5f7 100%); padding: 120px 0 80px; text-align: center; overflow: hidden; }
+        .hero-title { font-size: 4rem; font-weight: 900; line-height: 1.1; margin-bottom: 24px; animation: slideUp 0.8s ease-out forwards; }
+        .hero-sub { font-size: 1.25rem; color: #4b5563; max-width: 600px; margin: 0 auto 40px; animation: slideUp 0.8s ease-out 0.2s forwards; opacity: 0; }
+        .hero-ctas { animation: slideUp 0.8s ease-out 0.4s forwards; opacity: 0; display: flex; gap: 16px; justify-content: center; margin-bottom: 64px; }
+        
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mockup-container { position: relative; max-width: 300px; margin: 0 auto; animation: slideUp 1s ease-out 0.6s forwards; opacity: 0; }
+        .mockup-img { width: 100%; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 8px solid #111; }
+        
+        .stats-row { display: flex; justify-content: center; gap: 48px; margin-top: 60px; flex-wrap: wrap; }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 2.5rem; font-weight: 800; color: #111; }
+        .stat-label { color: #6b7280; font-weight: 500; }
+
+        .section-padding { padding: 100px 0; }
+        .section-title { font-size: 2.5rem; font-weight: 800; text-align: center; margin-bottom: 16px; }
+        .section-sub { text-align: center; color: #6b7280; margin-bottom: 64px; font-size: 1.1rem; }
+
+        .step-card { text-align: center; padding: 32px; }
+        .step-icon { width: 80px; height: 80px; background: #fff5f7; color: var(--qp-coral); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 24px; }
+        
+        .feature-card { background: white; border: 1px solid #eee; border-radius: 16px; padding: 32px; transition: all 0.3s ease; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 20px; }
+        
+        .pricing-card { background: white; border: 1px solid #eee; border-radius: 16px; padding: 40px; text-align: center; transition: transform 0.3s; height: 100%; }
+        .pricing-card.highlight { border: 2px solid var(--qp-coral); transform: scale(1.05); box-shadow: 0 20px 40px rgba(244, 63, 100, 0.1); }
+        .price { font-size: 3.5rem; font-weight: 900; margin: 24px 0; }
+        .price span { font-size: 1rem; color: #6b7280; font-weight: 500; }
+        
+        .testimonial-card { background: white; padding: 32px; border-radius: 16px; border: 1px solid #eee; }
+        .stars { color: #fbbf24; margin-bottom: 16px; }
+
+        .cta-banner { background: #111827; color: white; padding: 80px 0; text-align: center; border-radius: 32px; margin: 0 24px; }
+        
+        .footer { padding: 60px 0 30px; border-top: 1px solid #eee; }
+        
+        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); z-index: 100; transition: transform 0.2s; text-decoration: none; }
+        .whatsapp-float:hover { transform: scale(1.1); color: white; }
+
+        .fade-in-hidden { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-visible { opacity: 1; transform: translateY(0); }
       `}} />
 
-      <div className="notice">
-        <div className="container-xl">
-          <span><i className="bi bi-stars"></i> 5-day demo available for print shops</span>
-          <Link href="/signup">Create shop <i className="bi bi-arrow-right"></i></Link>  
-          Support Number : <a href="tel:+917069525795" className="support-number"> <i className="bi bi-phone"></i> +91 70695 25795 </a>
-        </div>
-      </div>
-
-      <nav className="navbar navbar-expand-lg sticky-top">
-        <div className="container-xl">
-          <Link className="brand" href="/"><span>QP</span><strong>Qr To Print</strong></Link>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Open menu">
+      {/* Navbar */}
+      <nav className="navbar navbar-expand-lg navbar-light fixed-top navbar-custom py-3">
+        <div className="container">
+          <Link href="/" className="qp-logo">
+            <span className="qp-logo-icon">QP</span>
+            Qr To Print
+          </Link>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className="collapse navbar-collapse" id="mainNav">
-            <div className="navbar-nav ms-auto align-items-lg-center">
-              <a className="nav-link" href="#how">How it works</a>
-              <a className="nav-link" href="#services">Print services</a>
-              <a className="nav-link" href="#shops">For shops</a>
-              <a className="nav-link" href="#pricing">Pricing</a>
-              <Link className="nav-link" href="/signup">Setup guide</Link>
-              <Link className="nav-link" href="/signup">Agent program</Link>
-              <Link className="btn-login" href="/login"><i className="bi bi-box-arrow-in-right"></i> Shop login</Link>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav mx-auto">
+              <li className="nav-item"><a className="nav-link fw-medium" href="#features">Features</a></li>
+              <li className="nav-item"><a className="nav-link fw-medium" href="#how-it-works">How it Works</a></li>
+              <li className="nav-item"><a className="nav-link fw-medium" href="#pricing">Pricing</a></li>
+              <li className="nav-item"><a className="nav-link fw-medium" href="#contact">Contact</a></li>
+            </ul>
+            <div className="d-flex gap-2">
+              <Link href="/auth/login" className="btn btn-outline-dark">Login</Link>
+              <Link href="/auth/register" className="btn btn-coral">Start Free Trial</Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <main>
-        <section className="hero" id="home">
-          <div className="container-xl">
-            <div className="row align-items-center g-5">
-              <div className="col-lg-6 hero-content">
-                <div className="eyebrow"><span></span>Printing made simple for customers and shops</div>
-                <h1>Scan the QR.<br/><em>Send it to print.</em></h1>
-                <p className="lead">Customers upload from their phone, choose pages and payment, and the shop&apos;s Windows printer receives an organized print job.</p>
-                <div className="hero-actions">
-                  <Link className="btn-primary" href="/signup">Set up my shop <i className="bi bi-arrow-right"></i></Link>
-                  <a className="btn-secondary" href="#how"><i className="bi bi-play-circle"></i> See the process</a>
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-lg-10">
+              <h1 className="hero-title">Turn Your Print Shop Into a <span className="text-coral">Smart Business</span></h1>
+              <p className="hero-sub">Allow customers to print documents securely by simply scanning a QR code. Automate your workflow with our Windows Print Agent.</p>
+              <div className="hero-ctas">
+                <Link href="/auth/register" className="btn btn-coral btn-lg">Start 5-Day Free Trial</Link>
+                <a href="#how-it-works" className="btn btn-outline-dark btn-lg bg-white">See How It Works</a>
+              </div>
+              
+              <div className="mockup-container">
+                <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="QR Code Scan Mockup" className="mockup-img" />
+              </div>
+
+              <div className="stats-row">
+                <div className="stat-item">
+                  <div className="stat-num">500+</div>
+                  <div className="stat-label">Active Shops</div>
                 </div>
-                <div className="hero-points">
-                  <span><i className="bi bi-check-circle-fill"></i>No WhatsApp</span>
-                  <span><i className="bi bi-check-circle-fill"></i>No pen drive</span>
-                  <span><i className="bi bi-check-circle-fill"></i>Cash or online payment</span>
+                <div className="stat-item">
+                  <div className="stat-num">50K+</div>
+                  <div className="stat-label">Prints Monthly</div>
                 </div>
-              </div>
-              <div className="col-lg-6">
-                <div className="product-visual">
-                  <img src="https://qrtoprint.in/assets/images/qr-print-hero.png" alt="Phone scanning QR and sending a document to a printer" />
-                  <div className="agent-pill">
-                    <span></span>
-                    <div>
-                      <strong>Print Agent connected</strong>
-                      <small>Job sent to Windows printer</small>
-                    </div>
-                    <i className="bi bi-printer"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="process-strip">
-          <div className="container-xl">
-            <div className="process-track">
-              <div><b>01</b><span><strong>Scan</strong><small>Shop QR code</small></span></div><i className="bi bi-arrow-right"></i>
-              <div><b>02</b><span><strong>Upload</strong><small>PDF or image</small></span></div><i className="bi bi-arrow-right"></i>
-              <div><b>03</b><span><strong>Pay</strong><small>Cash or online</small></span></div><i className="bi bi-arrow-right"></i>
-              <div><b>04</b><span><strong>Print</strong><small>Automatic job</small></span></div>
-            </div>
-          </div>
-        </section>
-
-        <section className="stats">
-          <div className="container-xl">
-            <div><strong>21139+</strong><span>shops registered</span></div>
-            <div><strong>551561+</strong><span>successful prints</span></div>
-            <div><strong>₹0.10</strong><span>wallet fee per job</span></div>
-            <div><strong>24/7</strong><span>customer uploads</span></div>
-          </div>
-        </section>
-
-        <section className="section how" id="how">
-          <div className="container-xl">
-            <div className="section-intro">
-              <div><span className="section-tag">Customer flow</span><h2>From phone to paper without counter confusion</h2></div>
-              <p>The print page asks only what is needed. The shop receives the file, settings, payment status and customer details in one job.</p>
-            </div>
-            <div className="row g-4 flow-grid">
-              <div className="col-md-6 col-xl-3">
-                <article><i className="bi bi-qr-code-scan"></i><b>01</b><h3>Open the shop QR</h3><p>The QR opens that shop&apos;s private mobile print page.</p></article>
-              </div>
-              <div className="col-md-6 col-xl-3">
-                <article><i className="bi bi-cloud-arrow-up"></i><b>02</b><h3>Choose and upload</h3><p>Add a file, select print service and adjust the layout.</p></article>
-              </div>
-              <div className="col-md-6 col-xl-3">
-                <article><i className="bi bi-sliders"></i><b>03</b><h3>Confirm print details</h3><p>Choose pages, copies, color, paper and payment mode.</p></article>
-              </div>
-              <div className="col-md-6 col-xl-3">
-                <article><i className="bi bi-printer"></i><b>04</b><h3>Collect the print</h3><p>The Print Agent routes the approved job to the printer.</p></article>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section services" id="services">
-          <div className="container-xl">
-            <div className="section-intro">
-              <div><span className="section-tag">More than documents</span><h2>Every common counter service in one print page</h2></div>
-              <p>Customers choose the job they need before uploading. Each service provides controls designed for that output.</p>
-            </div>
-            <div className="row g-3">
-              <div className="col-md-6">
-                <article className="service-row">
-                  <i className="bi bi-file-earmark-text"></i>
-                  <div><h3>Document printing</h3><p>PDF and images with page range, copies, size and duplex controls.</p></div>
-                  <span className="bi bi-arrow-up-right"></span>
-                </article>
-              </div>
-              <div className="col-md-6">
-                <article className="service-row">
-                  <i className="bi bi-person-bounding-box"></i>
-                  <div><h3>Passport photos</h3><p>Crop and arrange up to 25 passport photos on one A4 sheet.</p></div>
-                  <span className="bi bi-arrow-up-right"></span>
-                </article>
-              </div>
-              <div className="col-md-6">
-                <article className="service-row">
-                  <i className="bi bi-credit-card-2-front"></i>
-                  <div><h3>ID / Aadhaar cards</h3><p>Place front and back together with drag, resize and rotate tools.</p></div>
-                  <span className="bi bi-arrow-up-right"></span>
-                </article>
-              </div>
-              <div className="col-md-6">
-                <article className="service-row">
-                  <i className="bi bi-file-earmark-person"></i>
-                  <div><h3>Resume printing</h3><p>Clean, quick resume printing from PDF or image files.</p></div>
-                  <span className="bi bi-arrow-up-right"></span>
-                </article>
-              </div>
-            </div>
-            <div className="service-note">
-              <i className="bi bi-shield-check"></i>
-              <div><strong>Customer files are handled for printing</strong><span>Uploaded files are removed after the print workflow completes.</span></div>
-              <Link href="/signup">Read setup and privacy details</Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="section shops" id="shops">
-          <div className="container-xl">
-            <div className="row g-5 align-items-center">
-              <div className="col-lg-5">
-                <span className="section-tag">Built for the shop counter</span>
-                <h2>Your printing operation, visible in one panel</h2>
-                <p className="shop-lead">Connect existing Windows printers and manage jobs, payments, wallet balance and reports without changing how customers reach the shop.</p>
-                <Link className="text-link" href="/signup">Start your 5-day demo <i className="bi bi-arrow-right"></i></Link>
-              </div>
-              <div className="col-lg-7">
-                <div className="control-list">
-                  <article>
-                    <span><i className="bi bi-printer-fill"></i></span>
-                    <div><h3>Printer and agent status</h3><p>Add B&W and color printers, see connection health and route each job correctly.</p></div>
-                  </article>
-                  <article>
-                    <span><i className="bi bi-receipt"></i></span>
-                    <div><h3>Jobs and searchable reports</h3><p>Track queued, picked, printed and failed jobs by date, customer, file or status.</p></div>
-                  </article>
-                  <article>
-                    <span><i className="bi bi-wallet2"></i></span>
-                    <div><h3>Wallet, packages and referrals</h3><p>Add wallet funds, purchase a package and review every transaction.</p></div>
-                  </article>
+                <div className="stat-item">
+                  <div className="stat-num">4.9★</div>
+                  <div className="stat-label">Shop Rating</div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="section pricing" id="pricing">
-          <div className="container-xl">
-            <div className="section-heading">
-              <span className="section-tag">Simple pricing</span>
-              <h2>Start small. Upgrade when your shop is ready.</h2>
-              <p>Every package uses the same QR print workflow and Shop Panel.</p>
-            </div>
-            <div className="row g-3 justify-content-center">
-              <div className="col-md-6 col-xl-3">
-                <article className="price-card ">
-                  <p className="plan-name">Demo</p><h3><sup>₹</sup>0</h3><small>5 days</small>
-                  <ul><li><i className="bi bi-check2"></i>Personal shop QR</li><li><i className="bi bi-check2"></i>Print Agent access</li><li><i className="bi bi-check2"></i>10 demo jobs</li></ul>
-                  <Link href="/signup">Start free <i className="bi bi-arrow-right"></i></Link>
-                </article>
-              </div>
-              <div className="col-md-6 col-xl-3">
-                <article className="price-card featured">
-                  <span className="popular">New</span><p className="plan-name">Starter</p><h3><sup>₹</sup>49</h3><small>per month</small>
-                  <ul><li><i className="bi bi-check2"></i>400 completed print jobs</li><li><i className="bi bi-check2"></i>No per-print fee</li><li><i className="bi bi-check2"></i>Reports and support</li></ul>
-                  <Link href="/signup">Choose starter <i className="bi bi-arrow-right"></i></Link>
-                </article>
-              </div>
-              <div className="col-md-6 col-xl-3">
-                <article className="price-card ">
-                  <p className="plan-name">Monthly</p><h3><sup>₹</sup>99</h3><small>per month</small>
-                  <ul><li><i className="bi bi-check2"></i>Unlimited print jobs</li><li><i className="bi bi-check2"></i>No per-print fee</li><li><i className="bi bi-check2"></i>Reports and support</li></ul>
-                  <Link href="/signup">Choose monthly <i className="bi bi-arrow-right"></i></Link>
-                </article>
-              </div>
-              <div className="col-md-6 col-xl-3">
-                <article className="price-card ">
-                  <p className="plan-name">Yearly</p><h3><sup>₹</sup>599</h3><small>365 days</small>
-                  <ul><li><i className="bi bi-check2"></i>365-day access</li><li><i className="bi bi-check2"></i>Full feature access</li><li><i className="bi bi-check2"></i>Updates and support</li></ul>
-                  <Link href="/signup">Choose yearly <i className="bi bi-arrow-right"></i></Link>
-                </article>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section proof">
-          <div className="container-xl">
-            <div className="proof-head">
-              <div><span className="section-tag">Why shops use it</span><h2>Less file handling.<br/>More organized printing.</h2></div>
-              <p>Qr To Print keeps each customer request complete from upload to printed status, so the operator knows exactly what to print and where to send it.</p>
-            </div>
-            <div className="swiper review-swiper">
-              <div className="swiper-wrapper">
-                <blockquote className="swiper-slide">
-                  <div className="review-icon"><i className="bi bi-phone"></i></div>
-                  <p>Customers upload directly from their phone, so documents no longer get buried inside chat conversations.</p>
-                  <div className="review-meta"><div><strong>Customer upload flow</strong><span>QR print page</span></div><small><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i></small></div>
-                </blockquote>
-                <blockquote className="swiper-slide">
-                  <div className="review-icon"><i className="bi bi-card-checklist"></i></div>
-                  <p>Payment, print settings and job status remain together, making counter work easier to check.</p>
-                  <div className="review-meta"><div><strong>Daily shop operations</strong><span>Reports and payments</span></div><small><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i></small></div>
-                </blockquote>
-                <blockquote className="swiper-slide">
-                  <div className="review-icon"><i className="bi bi-printer"></i></div>
-                  <p>B&W and color jobs can be routed to their configured printers without checking every file manually.</p>
-                  <div className="review-meta"><div><strong>Automatic printer routing</strong><span>Windows Print Agent</span></div><small><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i></small></div>
-                </blockquote>
-              </div>
-              <div className="swiper-pagination"></div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section faq">
-          <div className="container-xl">
-            <div className="row g-5">
-              <div className="col-lg-4">
-                <span className="section-tag">Common questions</span>
-                <h2>Before you set up your shop</h2>
-                <p>Everything needed for the first test print is included in the setup guide.</p>
-                <Link href="/signup">Open full setup guide <i className="bi bi-arrow-right"></i></Link><br/>
-                Support Number : <a href="tel:+917069525795" className="support-number"> <i className="bi bi-phone"></i> +91 70695 25795 </a>
-              </div>
-              <div className="col-lg-8">
-                <div className="accordion accordion-flush" id="faqList">
-                  <div className="accordion-item">
-                    <h3 className="accordion-header"><button className="accordion-button " type="button" data-bs-toggle="collapse" data-bs-target="#faq0">Do I need a Wi-Fi printer?</button></h3>
-                    <div id="faq0" className="accordion-collapse collapse show" data-bs-parent="#faqList"><div className="accordion-body">No. The Windows Print Agent can use an installed USB or network printer.</div></div>
-                  </div>
-                  <div className="accordion-item">
-                    <h3 className="accordion-header"><button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">Can customers pay cash?</button></h3>
-                    <div id="faq1" className="accordion-collapse collapse " data-bs-parent="#faqList"><div className="accordion-body">Yes. A shop can enable cash, online payment, or both payment methods.</div></div>
-                  </div>
-                  <div className="accordion-item">
-                    <h3 className="accordion-header"><button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">Which files can customers upload?</button></h3>
-                    <div id="faq2" className="accordion-collapse collapse " data-bs-parent="#faqList"><div className="accordion-body">The print page supports PDF, JPG and PNG files with service-specific controls.</div></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="cta">
-          <div className="container-xl">
-            <div><span>Ready for your first test print?</span><h2>Create your shop QR and connect your printer.</h2></div>
-            <div><Link href="/signup">Start free demo <i className="bi bi-arrow-right"></i></Link><Link href="/login">Shop login</Link></div>
-          </div>
-        </section>
-      </main>
-
-      <footer>
-        <div className="container-xl footer-grid">
-          <div>
-            <Link className="brand footer-brand" href="/"><span>QP</span><strong>Qr To Print</strong></Link>
-            <p>Mobile uploads and automatic printing for local print shops and cyber cafes.</p>
-            <a href="tel:+917069525795" className="support-number"><i className="bi bi-telephone"></i> +91 70695 25795</a>
-          </div>
-          <div>
-            <strong>Product</strong>
-            <a href="#how">How it works</a>
-            <a href="#services">Print services</a>
-            <a href="#pricing">Pricing</a>
-          </div>
-          <div>
-            <strong>Shop owners</strong>
-            <Link href="/signup">Register shop</Link>
-            <Link href="/login">Shop login</Link>
-            <Link href="/signup">Setup guide</Link>
-          </div>
-          <div>
-            <strong>Company</strong>
-            <Link href="/signup">Agent program</Link>
-            <a href="#shops">Shop features</a>
-            <a href="https://wa.me/917069525795" target="_blank" rel="noopener noreferrer">Contact support</a>
-          </div>
-          <div>
-            <strong>Legal</strong>
-            <Link href="/signup">Terms & Conditions</Link>
-            <Link href="/signup">Privacy Policy</Link>
-            <Link href="/signup">Refund Policy</Link>
           </div>
         </div>
-        <div className="container-xl copyright">
-          <span>© 2026 Qr To Print. Kaushik Savaliya. All rights reserved.</span>
-          <div className="copyright-links">
-            <Link href="/signup">Terms</Link>
-            <Link href="/signup">Privacy</Link>
-            <Link href="/signup">Refunds</Link>
-            <a href="#home">Back to top <i className="bi bi-arrow-up"></i></a>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="section-padding bg-white">
+        <div className="container">
+          <h2 className="section-title fade-in-hidden">How It Works</h2>
+          <p className="section-sub fade-in-hidden">Three simple steps to modernize your print workflow</p>
+          
+          <div className="row g-4">
+            <div className="col-md-4 fade-in-hidden">
+              <div className="step-card">
+                <div className="step-icon">1</div>
+                <h4 className="fw-bold mb-3">Customer Scans QR</h4>
+                <p className="text-muted">Place your unique shop QR code on the counter. Customer scans it with their phone camera.</p>
+              </div>
+            </div>
+            <div className="col-md-4 fade-in-hidden" style={{transitionDelay: '0.1s'}}>
+              <div className="step-card">
+                <div className="step-icon">2</div>
+                <h4 className="fw-bold mb-3">Uploads Document</h4>
+                <p className="text-muted">They select the file (PDF, Word, Images) and choose print settings (Color/B&W, Copies).</p>
+              </div>
+            </div>
+            <div className="col-md-4 fade-in-hidden" style={{transitionDelay: '0.2s'}}>
+              <div className="step-card">
+                <div className="step-icon">3</div>
+                <h4 className="fw-bold mb-3">Auto Prints</h4>
+                <p className="text-muted">Our Windows Agent catches the file and sends it directly to your printer instantly.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="section-padding">
+        <div className="container">
+          <h2 className="section-title fade-in-hidden">Everything you need to scale</h2>
+          <p className="section-sub fade-in-hidden">Powerful features built for modern print shops</p>
+          
+          <div className="row g-4">
+            {[
+              { icon: '📱', title: 'Mobile Printing', desc: 'Customers don&apos;t need to connect cables or send emails. They print directly from their smartphones.' },
+              { icon: '🖨️', title: 'Windows Agent', desc: 'Install our lightweight agent on your Windows PC for hands-free automatic printing.' },
+              { icon: '📊', title: 'Live Dashboard', desc: 'Monitor your print queue, revenue, and active agents in real-time from anywhere.' },
+              { icon: '🔒', title: 'Secure Storage', desc: 'Documents are temporarily stored securely and automatically deleted after printing to protect privacy.' },
+              { icon: '🎁', title: 'Refer & Earn', desc: 'Invite other shop owners and earn free subscription months or cash rewards.' },
+              { icon: '📈', title: 'Analytics', desc: 'Track your daily, weekly, and monthly print volumes to understand your business growth.' }
+            ].map((f, i) => (
+              <div key={i} className="col-md-4 fade-in-hidden" style={{transitionDelay: \`\${i * 0.1}s\`}}>
+                <div className="feature-card">
+                  <div className="feature-icon">{f.icon}</div>
+                  <h4 className="fw-bold mb-3">{f.title}</h4>
+                  <p className="text-muted mb-0">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="section-padding bg-white">
+        <div className="container">
+          <h2 className="section-title fade-in-hidden">Simple, transparent pricing</h2>
+          <p className="section-sub fade-in-hidden">Choose the plan that works best for your shop</p>
+          
+          <div className="row g-4 align-items-center justify-content-center">
+            <div className="col-lg-4 col-md-6 fade-in-hidden">
+              <div className="pricing-card">
+                <h4 className="fw-bold">Demo Plan</h4>
+                <div className="price">Free<span>/5 days</span></div>
+                <ul className="list-unstyled text-start mb-4">
+                  <li className="mb-3">✓ All premium features</li>
+                  <li className="mb-3">✓ Windows Print Agent</li>
+                  <li className="mb-3">✓ Unlimited prints</li>
+                  <li className="mb-3 text-muted">✗ Community support</li>
+                </ul>
+                <Link href="/auth/register" className="btn btn-outline-dark w-100">Try for Free</Link>
+              </div>
+            </div>
+            
+            <div className="col-lg-4 col-md-6 fade-in-hidden" style={{transitionDelay: '0.1s'}}>
+              <div className="pricing-card highlight">
+                <div className="badge bg-coral text-white mb-3 py-2 px-3 rounded-pill">Most Popular</div>
+                <h4 className="fw-bold">Monthly Pro</h4>
+                <div className="price">₹99<span>/mo</span></div>
+                <ul className="list-unstyled text-start mb-4">
+                  <li className="mb-3">✓ All premium features</li>
+                  <li className="mb-3">✓ Windows Print Agent</li>
+                  <li className="mb-3">✓ Unlimited prints</li>
+                  <li className="mb-3">✓ Priority support</li>
+                </ul>
+                <Link href="/auth/register" className="btn btn-coral w-100">Subscribe Now</Link>
+              </div>
+            </div>
+            
+            <div className="col-lg-4 col-md-6 fade-in-hidden" style={{transitionDelay: '0.2s'}}>
+              <div className="pricing-card">
+                <h4 className="fw-bold">Yearly Saver</h4>
+                <div className="price">₹599<span>/yr</span></div>
+                <ul className="list-unstyled text-start mb-4">
+                  <li className="mb-3">✓ All premium features</li>
+                  <li className="mb-3">✓ Windows Print Agent</li>
+                  <li className="mb-3">✓ Unlimited prints</li>
+                  <li className="mb-3">✓ Save 50% vs monthly</li>
+                </ul>
+                <Link href="/auth/register" className="btn btn-outline-dark w-100">Get Yearly Plan</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="section-padding">
+        <div className="container">
+          <h2 className="section-title fade-in-hidden">Loved by shop owners</h2>
+          <div className="row g-4 mt-4">
+            {[
+              { text: "This has completely changed how my shop operates. No more pendrives with viruses!", author: "Rahul M., Print Shop Owner" },
+              { text: "The Windows agent works flawlessly. Customers love how fast it is.", author: "Priya S., Stationery Store" },
+              { text: "My revenue increased by 20% because customers don't have to wait in line anymore.", author: "Amit K., Cyber Cafe" }
+            ].map((t, i) => (
+              <div key={i} className="col-md-4 fade-in-hidden" style={{transitionDelay: \`\${i * 0.1}s\`}}>
+                <div className="testimonial-card">
+                  <div className="stars">★★★★★</div>
+                  <p className="mb-4 text-muted fw-medium">&quot;{t.text}&quot;</p>
+                  <h6 className="fw-bold mb-0">{t.author}</h6>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-5">
+        <div className="container fade-in-hidden">
+          <div className="cta-banner">
+            <h2 className="fw-bold mb-4">Ready to modernize your print shop?</h2>
+            <p className="mb-5 text-light fs-5">Join 500+ shop owners saving time and increasing profits.</p>
+            <Link href="/auth/register" className="btn btn-coral btn-lg">Start Your Free Trial Now</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer bg-white mt-5">
+        <div className="container">
+          <div className="row g-4">
+            <div className="col-lg-4">
+              <Link href="/" className="qp-logo mb-3">
+                <span className="qp-logo-icon">QP</span>
+                Qr To Print
+              </Link>
+              <p className="text-muted">The smartest way to accept print orders in your shop.</p>
+            </div>
+            <div className="col-lg-2 col-6">
+              <h6 className="fw-bold mb-3">Product</h6>
+              <ul className="list-unstyled text-muted">
+                <li className="mb-2"><a href="#features">Features</a></li>
+                <li className="mb-2"><a href="#pricing">Pricing</a></li>
+                <li className="mb-2">Download Agent</li>
+              </ul>
+            </div>
+            <div className="col-lg-2 col-6">
+              <h6 className="fw-bold mb-3">Company</h6>
+              <ul className="list-unstyled text-muted">
+                <li className="mb-2">About Us</li>
+                <li className="mb-2">Contact</li>
+                <li className="mb-2">Privacy Policy</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-top pt-4 mt-4 text-center text-muted">
+            <p className="mb-0">© {new Date().getFullYear()} Qr To Print. All rights reserved.</p>
           </div>
         </div>
       </footer>
+
+      {/* WhatsApp FAB */}
+      <a href="https://wa.me/917069525795" target="_blank" rel="noopener noreferrer" className="whatsapp-float">
+        <i className="bi bi-whatsapp"></i>
+        {/* If bootstrap icons not loaded, using text as fallback, normally you'd put the svg here */}
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+        </svg>
+      </a>
     </>
   );
 }

@@ -1,70 +1,81 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-export default function AdminAgentsPage() {
+export default function AdminAgents() {
   const [agents, setAgents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.from('agent_status').select('*, shops(name)').order('last_heartbeat', { ascending: false });
-      if (data) setAgents(data);
-    };
-    load();
-  }, []);
+  const fetchAgents = async () => {
+    setRefreshing(true);
+    const { data, error } = await supabase.from('agent_status').select('*').order('last_heartbeat', { ascending: false });
+    if (!error && data) {
+      setAgents(data);
+    }
+    setLoading(false);
+    setRefreshing(false);
+  };
 
-  const onlineCount = agents.filter(a => a.is_online).length;
+  useEffect(() => {
+    fetchAgents();
+  }, [supabase]);
 
   return (
-    <>
-      <div className="admin-topbar">
-        <div>
-          <div className="admin-topbar-label">Admin Panel</div>
-          <h1>Print Agents <span style={{ fontSize: 16, fontWeight: 500, color: '#6b7280' }}>({agents.length} total · {onlineCount} online)</span></h1>
-        </div>
+    <div style={{ padding: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#111827', margin: 0 }}>Print Agents</h1>
+        <button 
+          onClick={fetchAgents} 
+          disabled={refreshing}
+          style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', padding: '8px 16px', fontSize: '14px', fontWeight: 500, color: '#374151', cursor: refreshing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <i className={`bi bi-arrow-clockwise ${refreshing ? 'spin' : ''}`}></i>
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
-      <div className="admin-content">
-        <div className="row g-3 mb-4">
-          <div className="col-md-3">
-            <div className="stat-card"><div className="stat-icon" style={{ background: '#ecfdf5' }}><i className="bi bi-circle-fill text-success" style={{ fontSize: 12 }}></i></div><div><div className="stat-val">{onlineCount}</div><div className="stat-label">Online Now</div></div></div>
-          </div>
-          <div className="col-md-3">
-            <div className="stat-card"><div className="stat-icon" style={{ background: '#f3f4f6' }}><i className="bi bi-pc-display" style={{ color: '#374151' }}></i></div><div><div className="stat-val">{agents.length}</div><div className="stat-label">Total Agents</div></div></div>
-          </div>
-        </div>
 
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid #f3f4f6' }}>
-            <h6 style={{ margin: 0, fontWeight: 700 }}>Agent Status</h6>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table table-hover mb-0 align-middle">
-              <thead className="table-light">
-                <tr><th>Shop ID</th><th>Shop Name</th><th>Agent Version</th><th>Last Heartbeat</th><th>Status</th></tr>
-              </thead>
-              <tbody>
-                {agents.length === 0 && <tr><td colSpan={5} className="text-center text-muted py-5">No agents registered yet.</td></tr>}
-                {agents.map(a => (
-                  <tr key={a.shop_id}>
-                    <td className="fw-bold font-monospace" style={{ fontSize: 12 }}>{a.shop_id}</td>
-                    <td style={{ fontWeight: 600 }}>{(a.shops as any)?.name || '—'}</td>
-                    <td style={{ fontSize: 12, color: '#6b7280' }}>{a.agent_version || 'Unknown'}</td>
-                    <td style={{ fontSize: 12, color: '#9ca3af' }}>{a.last_heartbeat ? new Date(a.last_heartbeat).toLocaleString('en-IN') : '—'}</td>
-                    <td>
-                      <span className={`badge ${a.is_online ? 'bg-success' : 'bg-secondary'}`}>
-                        <i className={`bi ${a.is_online ? 'bi-circle-fill' : 'bi-circle'} me-1`} style={{ fontSize: 8 }}></i>
-                        {a.is_online ? 'Online' : 'Offline'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: '#f9fafb', color: '#6b7280', fontSize: '12px', textTransform: 'uppercase' }}>
+                <th style={{ padding: '12px 20px', fontWeight: 500 }}>Shop ID</th>
+                <th style={{ padding: '12px 20px', fontWeight: 500 }}>Status</th>
+                <th style={{ padding: '12px 20px', fontWeight: 500 }}>Last Heartbeat</th>
+                <th style={{ padding: '12px 20px', fontWeight: 500 }}>Version</th>
+                <th style={{ padding: '12px 20px', fontWeight: 500 }}>Hostname</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>Loading agents...</td></tr>
+              ) : agents.length === 0 ? (
+                <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>No print agents connected</td></tr>
+              ) : (
+                agents.map((agent) => {
+                  const isOnline = agent.status === 'online';
+                  return (
+                    <tr key={agent.id || agent.shop_id} style={{ borderTop: '1px solid #e5e7eb', fontSize: '14px' }}>
+                      <td style={{ padding: '12px 20px', color: '#111827', fontWeight: 500, fontFamily: 'monospace', fontSize: '13px' }}>{agent.shop_id}</td>
+                      <td style={{ padding: '12px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isOnline ? '#10b981' : '#ef4444' }}></div>
+                          <span style={{ color: isOnline ? '#059669' : '#dc2626', fontWeight: 500 }}>{isOnline ? 'Online' : 'Offline'}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 20px', color: '#6b7280' }}>{new Date(agent.last_heartbeat).toLocaleString()}</td>
+                      <td style={{ padding: '12px 20px', color: '#4b5563' }}>{agent.version || 'Unknown'}</td>
+                      <td style={{ padding: '12px 20px', color: '#4b5563' }}>{agent.hostname || '-'}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </>
+    </div>
   );
 }

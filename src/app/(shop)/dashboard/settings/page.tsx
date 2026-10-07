@@ -1,120 +1,188 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function SettingsPage() {
   const [shop, setShop] = useState<any>(null);
-  const [form, setForm] = useState({ file_size_limit_mb: 20, retention_hours: 24, min_order_amount: 0, is_active: true });
-  const [services, setServices] = useState(['document', 'aadhaar', 'pan', 'photo', 'resume', 'xerox']);
-  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  
   const supabase = createClient();
 
-  const allServices = [
-    { id: 'document', label: 'Document Printing', icon: 'bi-file-earmark-text' },
-    { id: 'aadhaar', label: 'Aadhaar / ID Cards', icon: 'bi-credit-card-2-front' },
-    { id: 'pan', label: 'PAN Card', icon: 'bi-credit-card' },
-    { id: 'photo', label: 'Passport Photos', icon: 'bi-person-bounding-box' },
-    { id: 'resume', label: 'Resume Printing', icon: 'bi-file-earmark-person' },
-    { id: 'xerox', label: 'Xerox / Photocopy', icon: 'bi-copy' },
+  const servicesList = [
+    { id: 'doc', label: 'Document Print' },
+    { id: 'idcard', label: 'Aadhaar/ID Cards' },
+    { id: 'pancard', label: 'PAN Card' },
+    { id: 'passport', label: 'Passport Photos' },
+    { id: 'resume', label: 'Resume Printing' },
+    { id: 'xerox', label: 'Xerox/Photocopy' }
   ];
 
   useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from('shops').select('*').eq('owner_user_id', user.id).single();
+    const fetchSettings = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data } = await supabase
+        .from('shops')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+        
       if (data) {
-        setShop(data);
-        setForm({ file_size_limit_mb: data.file_size_limit_mb || 20, retention_hours: data.retention_hours || 24, min_order_amount: data.min_order_amount || 0, is_active: data.is_active ?? true });
-        setServices(data.services_enabled || ['document', 'aadhaar', 'pan', 'photo', 'resume', 'xerox']);
+        // Parse services if stringified JSON, or fallback to default
+        let parsedServices = [];
+        try {
+          parsedServices = typeof data.services_enabled === 'string' ? JSON.parse(data.services_enabled) : (data.services_enabled || ['doc', 'xerox']);
+        } catch (e) {
+          parsedServices = ['doc', 'xerox'];
+        }
+        setShop({ ...data, parsedServices });
       }
+      setLoading(false);
     };
-    init();
-  }, []);
+    fetchSettings();
+  }, [supabase]);
 
-  const toggleService = (id: string) => {
-    setServices(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+  const handleServiceToggle = (serviceId: string) => {
+    const current = [...(shop.parsedServices || [])];
+    const index = current.indexOf(serviceId);
+    if (index > -1) {
+      current.splice(index, 1);
+    } else {
+      current.push(serviceId);
+    }
+    setShop({ ...shop, parsedServices: current });
   };
 
-  const save = async () => {
-    if (!shop) return;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setShop({ ...shop, [e.target.name]: value });
+  };
+
+  const handleSave = async () => {
     setSaving(true);
-    await supabase.from('shops').update({ ...form, services_enabled: services }).eq('id', shop.id);
+    setMessage({ type: '', text: '' });
+    
+    const { error } = await supabase
+      .from('shops')
+      .update({
+        is_active: shop.is_active,
+        services_enabled: shop.parsedServices,
+        retention_hours: parseInt(shop.retention_hours || '24'),
+        file_size_limit_mb: parseInt(shop.file_size_limit_mb || '25'),
+      })
+      .eq('id', shop.id);
+      
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    
+    if (error) {
+      setMessage({ type: 'error', text: error.message });
+    } else {
+      setMessage({ type: 'success', text: 'Settings updated successfully!' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    }
   };
+
+  if (loading) return <div style={{ padding: '32px' }}>Loading settings...</div>;
 
   return (
-    <>
-      <div className="sp-topbar">
-        <div className="sp-topbar-left"><small>Shop Panel</small><h1>Settings</h1></div>
-        <button onClick={save} disabled={saving} className="btn-sp btn-sp-dark">
-          {saving ? 'Saving…' : 'Save All Settings'}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="sp-topbar" style={{ padding: '24px 32px', background: '#fff', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="sp-topbar-left">
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>Shop Settings</h1>
+          <p style={{ margin: 0, color: '#64748b', fontSize: '14px', marginTop: '4px' }}>Configure your shop rules and services</p>
+        </div>
+        <button 
+          onClick={handleSave} 
+          disabled={saving}
+          className="btn-sp-primary" 
+          style={{ padding: '10px 20px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}
+        >
+          {saving ? 'Saving...' : 'Save All Settings'}
         </button>
       </div>
+      
+      <div className="sp-body" style={{ padding: '32px', overflowY: 'auto', flex: 1, background: '#f8fafc' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          {message.text && (
+            <div style={{ padding: '16px', borderRadius: '8px', marginBottom: '24px', background: message.type === 'success' ? '#dcfce3' : '#fee2e2', color: message.type === 'success' ? '#16a34a' : '#dc2626', border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}` }}>
+              {message.text}
+            </div>
+          )}
 
-      <div className="sp-body">
-        {saved && <div className="alert-success" style={{ marginBottom: 20 }}>Settings saved successfully!</div>}
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
-          
-          <div className="info-card">
-            <div className="info-card-header">Shop Configuration</div>
-            <div className="info-card-body">
-              <div className="form-group">
-                <label className="form-label">Max File Size (MB)</label>
-                <input type="number" className="form-control-sp" value={form.file_size_limit_mb} onChange={e => setForm({ ...form, file_size_limit_mb: +e.target.value })} />
-                <div className="form-text">Maximum size per file uploaded by customer.</div>
+          <div className="info-card" style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', padding: '32px', marginBottom: '24px' }}>
+            <h3 style={{ margin: '0 0 24px 0', fontSize: '18px', fontWeight: '600', color: '#0f172a', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>Store Status</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontWeight: '500', color: '#0f172a', marginBottom: '4px' }}>Accepting Orders</div>
+                <div style={{ color: '#64748b', fontSize: '14px' }}>Toggle off to temporarily stop receiving new print jobs</div>
               </div>
-              <div className="form-group">
-                <label className="form-label">File Retention (Hours)</label>
-                <input type="number" className="form-control-sp" value={form.retention_hours} onChange={e => setForm({ ...form, retention_hours: +e.target.value })} />
-                <div className="form-text">Files are auto-deleted after order completes or after this duration.</div>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Min Order Amount (₹)</label>
-                <input type="number" className="form-control-sp" value={form.min_order_amount} onChange={e => setForm({ ...form, min_order_amount: +e.target.value })} />
-              </div>
-              
-              <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #dfe3e8' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} style={{ width: 18, height: 18, accentColor: '#f43f64' }} />
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>Shop Active</div>
-                    <div style={{ fontSize: 12, color: '#687080' }}>Accepting print orders from customers</div>
-                  </div>
-                </label>
-              </div>
+              <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '28px' }}>
+                <input 
+                  type="checkbox" 
+                  name="is_active"
+                  checked={shop?.is_active || false}
+                  onChange={handleChange}
+                  style={{ opacity: 0, width: 0, height: 0 }} 
+                />
+                <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: shop?.is_active ? '#22c55e' : '#cbd5e1', transition: '.4s', borderRadius: '34px' }}>
+                  <span style={{ position: 'absolute', content: '""', height: '20px', width: '20px', left: shop?.is_active ? '26px' : '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
+                </span>
+              </label>
             </div>
           </div>
 
-          <div className="info-card">
-            <div className="info-card-header">Enabled Services</div>
-            <div className="info-card-body" style={{ padding: 0 }}>
-              <div style={{ padding: '16px 20px', fontSize: 13, color: '#687080', borderBottom: '1px solid #dfe3e8', background: '#f5f7f8' }}>
-                Toggle which print services customers can select on your print page.
-              </div>
-              {allServices.map((s, i) => (
-                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: i < allServices.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f5f7f8', display: 'grid', placeItems: 'center', color: '#687080' }}>
-                      <i className={`bi ${s.icon}`}></i>
-                    </div>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#171821' }}>{s.label}</span>
-                  </div>
-                  <label style={{ cursor: 'pointer' }}>
-                    <input type="checkbox" checked={services.includes(s.id)} onChange={() => toggleService(s.id)} style={{ width: 20, height: 20, accentColor: '#f43f64' }} />
-                  </label>
-                </div>
+          <div className="info-card" style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', padding: '32px', marginBottom: '24px' }}>
+            <h3 style={{ margin: '0 0 24px 0', fontSize: '18px', fontWeight: '600', color: '#0f172a', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>Services Enabled</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {servicesList.map(svc => (
+                <label key={svc.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', background: shop?.parsedServices?.includes(svc.id) ? '#fef2f2' : '#fff' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={shop?.parsedServices?.includes(svc.id) || false}
+                    onChange={() => handleServiceToggle(svc.id)}
+                    style={{ width: '18px', height: '18px', accentColor: '#ef4444' }}
+                  />
+                  <span style={{ fontWeight: '500', color: '#334155' }}>{svc.label}</span>
+                </label>
               ))}
+            </div>
+          </div>
+
+          <div className="info-card" style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', padding: '32px' }}>
+            <h3 style={{ margin: '0 0 24px 0', fontSize: '18px', fontWeight: '600', color: '#0f172a', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>System Configuration</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className="form-label" style={{ fontWeight: '500', color: '#334155', fontSize: '14px' }}>Max File Size (MB)</label>
+                <input 
+                  type="number" 
+                  name="file_size_limit_mb"
+                  value={shop?.file_size_limit_mb || ''} 
+                  onChange={handleChange}
+                  className="form-control-sp" 
+                  style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }} 
+                />
+                <div style={{ fontSize: '12px', color: '#64748b' }}>Maximum size allowed per upload</div>
+              </div>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className="form-label" style={{ fontWeight: '500', color: '#334155', fontSize: '14px' }}>File Retention (Hours)</label>
+                <input 
+                  type="number" 
+                  name="retention_hours"
+                  value={shop?.retention_hours || ''} 
+                  onChange={handleChange}
+                  className="form-control-sp" 
+                  style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }} 
+                />
+                <div style={{ fontSize: '12px', color: '#64748b' }}>Time before files are auto-deleted</div>
+              </div>
             </div>
           </div>
 
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -1,71 +1,107 @@
 'use client';
-
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
 
 export default function WalletPage() {
   const plans = [
-    { name: 'Demo', price: 0, period: '5 days', jobs: '10 demo jobs', highlight: false },
-    { name: 'Starter', price: 49, period: 'per month', jobs: '400 print jobs', highlight: false },
-    { name: 'Monthly', price: 99, period: 'per month', jobs: 'Unlimited jobs', highlight: true },
-    { name: 'Yearly', price: 599, period: '365 days', jobs: 'Unlimited jobs', highlight: false },
+    { name: 'Demo', price: '₹0', duration: '5 days', features: ['50 Print Jobs', 'Basic Support', 'Standard Quality'], active: false },
+    { name: 'Starter', price: '₹49', duration: '/mo', features: ['400 Print Jobs', 'Email Support', 'Standard Quality'], active: false },
+    { name: 'Monthly', price: '₹99', duration: '/mo', features: ['Unlimited Jobs', 'Priority Support', 'Premium Features'], active: true, highlight: true },
+    { name: 'Yearly', price: '₹599', duration: '/yr', features: ['Unlimited Jobs', '24/7 Phone Support', 'All Premium Features', 'Free Updates'], active: false }
   ];
 
   return (
-    <>
-      <div className="sp-topbar">
-        <div className="sp-topbar-left"><small>Shop Panel</small><h1>Wallet &amp; Plans</h1></div>
-      </div>
-
-      <div className="sp-body">
-        {/* Wallet Balance */}
-        <div className="shop-id-box" style={{ background: '#1d4ed8' }}>
-          <div>
-            <div className="shop-id-label" style={{ color: '#bfdbfe' }}>Wallet Balance</div>
-            <div className="shop-id-value">₹0.00</div>
-            <div className="shop-id-sub" style={{ color: '#bfdbfe' }}>Add funds to activate your subscription plan.</div>
-          </div>
-          <div>
-            <button className="btn-sp" style={{ background: '#fff', color: '#1d4ed8' }}>Add Funds</button>
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="sp-topbar" style={{ padding: '24px 32px', background: '#fff', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="sp-topbar-left">
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>Wallet & Plans</h1>
+          <p style={{ margin: 0, color: '#64748b', fontSize: '14px', marginTop: '4px' }}>Manage your subscription and billing</p>
         </div>
-
-        {/* Plans */}
-        <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16, color: '#171821' }}>Available Plans</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
-          {plans.map((plan) => (
-            <div key={plan.name} className="info-card" style={{ marginBottom: 0, border: plan.highlight ? '2px solid #2563eb' : '1px solid #dfe3e8', display: 'flex', flexDirection: 'column' }}>
-              <div className="info-card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {plan.highlight && <span style={{ background: '#dbeafe', color: '#1e40af', padding: '4px 8px', borderRadius: 4, fontSize: 11, fontWeight: 800, alignSelf: 'flex-start', marginBottom: 12 }}>MOST POPULAR</span>}
-                <div style={{ fontWeight: 700, fontSize: 15, color: '#687080' }}>{plan.name}</div>
-                <div style={{ fontSize: 32, fontWeight: 900, color: '#171821', margin: '4px 0' }}>₹{plan.price}</div>
-                <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>{plan.period}</div>
-                
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', fontSize: 13, color: '#171821' }}>
-                  <li style={{ marginBottom: 8 }}><i className="bi bi-check2 text-success" style={{ marginRight: 8, fontSize: 16 }}></i>{plan.jobs}</li>
-                  <li style={{ marginBottom: 8 }}><i className="bi bi-check2 text-success" style={{ marginRight: 8, fontSize: 16 }}></i>No per-print fee</li>
-                  <li><i className="bi bi-check2 text-success" style={{ marginRight: 8, fontSize: 16 }}></i>Print Agent access</li>
-                </ul>
-                
-                <button className={plan.highlight ? 'btn-sp btn-sp-primary' : 'btn-sp btn-sp-outline'} style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}>
-                  {plan.price === 0 ? 'Current Plan' : 'Activate'}
-                </button>
-              </div>
+      </div>
+      
+      <div className="sp-body" style={{ padding: '32px', overflowY: 'auto', flex: 1, background: '#f8fafc' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          
+          <div style={{ marginBottom: '40px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#0f172a', marginBottom: '24px' }}>Subscription Plans</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+              {plans.map((plan, idx) => (
+                <div key={idx} style={{ 
+                  background: '#fff', 
+                  borderRadius: '16px', 
+                  padding: '24px', 
+                  boxShadow: plan.highlight ? '0 10px 25px rgba(239, 68, 68, 0.15)' : '0 1px 3px rgba(0,0,0,0.05)', 
+                  border: plan.highlight ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  {plan.highlight && (
+                    <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#ef4444', color: '#fff', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' }}>
+                      MOST POPULAR
+                    </div>
+                  )}
+                  <div style={{ fontWeight: '600', color: '#64748b', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>{plan.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
+                    <span style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a' }}>{plan.price}</span>
+                    <span style={{ color: '#64748b' }}>{plan.duration}</span>
+                  </div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px 0', flex: 1 }}>
+                    {plan.features.map((feat, fidx) => (
+                      <li key={fidx} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#334155', fontSize: '14px' }}>
+                        <i className="bi bi-check-circle-fill" style={{ color: '#22c55e', fontSize: '16px' }}></i>
+                        {feat}
+                      </li>
+                    ))}
+                  </ul>
+                  <button style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    borderRadius: '8px', 
+                    fontWeight: '600', 
+                    border: plan.highlight ? 'none' : '1px solid #cbd5e1', 
+                    background: plan.highlight ? '#ef4444' : '#fff', 
+                    color: plan.highlight ? '#fff' : '#0f172a',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}>
+                    {plan.active ? 'Current Plan' : 'Upgrade'}
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Transactions */}
-        <div className="table-card">
-          <div className="table-card-header">
-            <h2>Transaction History</h2>
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#0f172a', marginBottom: '24px' }}>Transaction History</h2>
+            <div className="table-card" style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '16px 24px', color: '#64748b', fontWeight: '500', fontSize: '13px', textTransform: 'uppercase' }}>Date</th>
+                    <th style={{ padding: '16px 24px', color: '#64748b', fontWeight: '500', fontSize: '13px', textTransform: 'uppercase' }}>Description</th>
+                    <th style={{ padding: '16px 24px', color: '#64748b', fontWeight: '500', fontSize: '13px', textTransform: 'uppercase' }}>Amount</th>
+                    <th style={{ padding: '16px 24px', color: '#64748b', fontWeight: '500', fontSize: '13px', textTransform: 'uppercase' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colSpan={4} style={{ padding: '60px 40px', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                        <i className="bi bi-receipt" style={{ fontSize: '48px', color: '#cbd5e1' }}></i>
+                        <div>
+                          <h4 style={{ margin: 0, color: '#0f172a', fontWeight: '600', fontSize: '18px' }}>No transactions yet</h4>
+                          <p style={{ margin: '8px 0 0', color: '#64748b' }}>Your billing history will appear here once you subscribe to a plan.</p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div style={{ padding: 40, textAlign: 'center', color: '#687080' }}>
-            <i className="bi bi-clock-history" style={{ fontSize: 32, display: 'block', marginBottom: 8, opacity: 0.4 }}></i>
-            No transactions yet.
-          </div>
+
         </div>
       </div>
-    </>
+    </div>
   );
 }

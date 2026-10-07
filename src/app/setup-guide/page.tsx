@@ -1,115 +1,182 @@
-import Link from 'next/link';
+'use client'
 
-export default function PrintAgentPage() {
-  const steps = [
-    { num: '01', title: 'Download the ZIP', desc: 'Go to your Shop Dashboard → Downloads tab and click "Download Print Agent ZIP". The ZIP contains your shop ID, secret key, and setup scripts already configured.' },
-    { num: '02', title: 'Check SumatraPDF', desc: 'The agent uses SumatraPDF for silent printing. If not installed, download it free from sumatrapdfreader.org and note the install path (default: C:\\Program Files\\SumatraPDF\\SumatraPDF.exe).' },
-    { num: '03', title: 'Run the Installer', desc: 'Extract the ZIP and double-click "Install Print Agent.cmd". Right-click → Run as Administrator for best results. The installer copies files to %LocalAppData%\\QRPrintAgent\\.' },
-    { num: '04', title: 'Verify Connection', desc: 'The agent starts automatically. Go to your Dashboard → Printers page. Within 30 seconds you should see "Agent Online" and your Windows printers listed automatically.' },
-  ];
+import React from 'react'
 
+export default function SetupGuidePage() {
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        .guide-page { min-height: 100vh; background: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        .guide-header { background: #111; color: white; padding: 60px 24px; text-align: center; }
-        .guide-body { max-width: 860px; margin: 0 auto; padding: 40px 24px; }
-        .step-card { display: flex; gap: 20px; background: white; border-radius: 14px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 16px; }
-        .step-num { font-size: 36px; font-weight: 900; color: #e5e7eb; font-family: monospace; flex-shrink: 0; width: 56px; }
-        .req-card { background: white; border-radius: 14px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 32px; }
-        .code-block { background: #111; color: #a3e635; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; margin: 12px 0; overflow-x: auto; }
-      `}} />
-
-      <div className="guide-page">
-        <div className="guide-header">
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-            <div style={{ width: 44, height: 44, background: '#2563eb', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16 }}>QP</div>
-            <span style={{ fontWeight: 700, fontSize: 18 }}>Qr To Print</span>
+    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ backgroundColor: '#fcfcfc', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
+      {/* Header */}
+      <header className="sp-topbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', backgroundColor: '#fff', borderBottom: '1px solid #eee' }}>
+        <div className="sp-topbar-left" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ fontWeight: 800, fontSize: '20px', color: '#f43f64' }}>
+            <i className="bi bi-qr-code" style={{ marginRight: '8px' }}></i>
+            Qr To Print
           </div>
-          <h1 style={{ fontSize: 36, fontWeight: 800, marginBottom: 12 }}>Print Agent Setup Guide</h1>
-          <p style={{ color: '#9ca3af', maxWidth: 540, margin: '0 auto', fontSize: 15 }}>
-            Install the Windows Print Agent to automatically receive and print customer orders directly to your connected printer — no manual work needed.
+        </div>
+        <div style={{ color: '#666', fontSize: '14px', fontWeight: 500 }}>
+          <span>Home</span> &gt; <span style={{ color: '#333' }}>Setup Guide</span>
+        </div>
+      </header>
+
+      <main className="sp-body" style={{ padding: '40px 24px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 700, color: '#111', marginBottom: '12px' }}>Windows Print Agent Setup Guide</h1>
+          <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.6', maxWidth: '600px', margin: '0 auto' }}>
+            Follow these simple steps to install the Windows Print Agent and start receiving print jobs automatically from your QR code.
           </p>
-          <div style={{ marginTop: 24 }}>
-            <Link href="/login" style={{ display: 'inline-block', background: '#2563eb', color: 'white', borderRadius: 8, padding: '12px 28px', fontWeight: 700, textDecoration: 'none', marginRight: 12 }}>
-              Go to Dashboard →
-            </Link>
-          </div>
         </div>
 
-        <div className="guide-body">
-          {/* Requirements */}
-          <div className="req-card">
-            <h3 style={{ fontWeight: 700, marginBottom: 16, fontSize: 16 }}>Requirements</h3>
-            <div className="row g-3">
-              {[
-                { icon: '🪟', label: 'Windows 10 or 11', sub: '64-bit recommended' },
-                { icon: '🖨️', label: 'USB or Network Printer', sub: 'Installed in Windows' },
-                { icon: '📄', label: 'SumatraPDF', sub: 'Free — sumatrapdfreader.org' },
-                { icon: '🌐', label: 'Internet Connection', sub: 'Always-on or periodic' },
-              ].map(r => (
-                <div key={r.label} className="col-6 col-md-3">
-                  <div style={{ textAlign: 'center', padding: '16px 8px', background: '#f9fafb', borderRadius: 10 }}>
-                    <div style={{ fontSize: 28 }}>{r.icon}</div>
-                    <div style={{ fontWeight: 700, fontSize: 13, marginTop: 6 }}>{r.label}</div>
-                    <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.sub}</div>
-                  </div>
+        {/* Prerequisites */}
+        <section className="info-card" style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginBottom: '32px', border: '1px solid #eaeaea' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#222', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="bi bi-info-circle-fill" style={{ color: '#f43f64' }}></i> Prerequisites
+          </h2>
+          <div className="info-card-body">
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              <li style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <i className="bi bi-windows" style={{ color: '#0078d7', marginTop: '2px' }}></i>
+                <div>
+                  <strong style={{ display: 'block', color: '#333' }}>Windows 10 or 11</strong>
+                  <span style={{ color: '#666', fontSize: '14px' }}>The print agent requires a Windows machine to communicate with your printers.</span>
                 </div>
-              ))}
-            </div>
+              </li>
+              <li style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <i className="bi bi-file-earmark-pdf" style={{ color: '#e2574c', marginTop: '2px' }}></i>
+                <div>
+                  <strong style={{ display: 'block', color: '#333' }}>SumatraPDF Reader</strong>
+                  <span style={{ color: '#666', fontSize: '14px', display: 'block', marginBottom: '8px' }}>Required for silent PDF printing in the background.</span>
+                  <a href="https://www.sumatrapdfreader.org/download-free-pdf-viewer" target="_blank" rel="noreferrer" className="btn-sp btn-sp-dark" style={{ display: 'inline-block', padding: '6px 12px', backgroundColor: '#222', color: '#fff', borderRadius: '6px', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+                    Download SumatraPDF
+                  </a>
+                </div>
+              </li>
+              <li style={{ padding: '12px 0', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <i className="bi bi-hdd-network" style={{ color: '#107c41', marginTop: '2px' }}></i>
+                <div>
+                  <strong style={{ display: 'block', color: '#333' }}>.NET Framework 4.8+</strong>
+                  <span style={{ color: '#666', fontSize: '14px' }}>Usually pre-installed on Windows 10/11.</span>
+                </div>
+              </li>
+            </ul>
           </div>
+        </section>
 
-          {/* Steps */}
-          <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Installation Steps</h3>
-          {steps.map(s => (
-            <div key={s.num} className="step-card">
-              <div className="step-num">{s.num}</div>
+        {/* Step by step */}
+        <section className="info-card" style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginBottom: '32px', border: '1px solid #eaeaea' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#222', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="bi bi-list-ol" style={{ color: '#f43f64' }}></i> Installation Steps
+          </h2>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f43f64', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>1</div>
               <div>
-                <h4 style={{ fontWeight: 700, marginBottom: 6, fontSize: 16 }}>{s.title}</h4>
-                <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>{s.desc}</p>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#333', margin: '0 0 8px 0' }}>Download the Print Agent</h3>
+                <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Download the latest version of the Qr To Print Windows Agent from your dashboard.</p>
               </div>
             </div>
-          ))}
-
-          {/* How it works */}
-          <div style={{ background: '#111', borderRadius: 14, padding: 28, color: 'white', marginTop: 32 }}>
-            <h3 style={{ fontWeight: 700, marginBottom: 16, fontSize: 16 }}>How the Agent Works</h3>
-            <div className="code-block">
-              # Agent loop (every 10 seconds):
-              <br/>1. POST /api/agent/heartbeat  ← Reports online + printer list
-              <br/>2. GET  /api/agent/next-job   ← Checks for new print jobs
-              <br/>3. Downloads file via secure signed URL (expires in 5 min)
-              <br/>4. SumatraPDF.exe -print-to "PrinterName" -silent file.pdf
-              <br/>5. POST /api/agent/job-status ← Reports printed / failed
-            </div>
-            <p style={{ color: '#9ca3af', fontSize: 13 }}>
-              The agent runs as a hidden background process and starts automatically when Windows logs in. It uses your unique shop credentials so no other shop can access your queue.
-            </p>
-          </div>
-
-          {/* FAQ */}
-          <div style={{ marginTop: 32 }}>
-            <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Common Questions</h3>
-            {[
-              { q: 'Does the agent need to run continuously?', a: 'Yes, it should run while your shop is open. It starts automatically on Windows login and runs hidden in the background.' },
-              { q: 'What if SumatraPDF is in a different location?', a: 'Edit the agent-config.json file inside %LocalAppData%\\QRPrintAgent\\<YourShopID>\\ and update the sumatraPath value.' },
-              { q: 'Can I add multiple printers?', a: 'Yes. Add printers in Dashboard → Printers. The agent will detect all installed Windows printers and report them. You can then set routing rules for B&W and Color jobs.' },
-              { q: 'How do I stop or uninstall the agent?', a: 'Open Task Scheduler, find QRPrintAgent and delete it. Then delete the folder at %LocalAppData%\\QRPrintAgent\\.' },
-            ].map(f => (
-              <div key={f.q} style={{ background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', padding: '20px', marginBottom: 12 }}>
-                <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 14 }}>Q: {f.q}</div>
-                <div style={{ color: '#6b7280', fontSize: 13 }}>A: {f.a}</div>
+            
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f43f64', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>2</div>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#333', margin: '0 0 8px 0' }}>Extract and Run</h3>
+                <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Extract the downloaded ZIP file to a folder on your computer. Run the <code>QrPrintAgent.exe</code> file.</p>
+                <div className="alert-success" style={{ backgroundColor: '#e6f4ea', color: '#137333', padding: '12px', borderRadius: '6px', fontSize: '13px', marginTop: '12px', display: 'inline-block' }}>
+                  <i className="bi bi-shield-check" style={{ marginRight: '6px' }}></i>
+                  If Windows SmartScreen appears, click &quot;More info&quot; and then &quot;Run anyway&quot;.
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div style={{ textAlign: 'center', marginTop: 40 }}>
-            <Link href="/login" style={{ display: 'inline-block', background: '#111', color: 'white', borderRadius: 10, padding: '14px 32px', fontWeight: 700, textDecoration: 'none' }}>
-              Back to Dashboard →
-            </Link>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f43f64', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>3</div>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#333', margin: '0 0 8px 0' }}>Login with your Shop Key</h3>
+                <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Enter the Shop Key provided in your Qr To Print dashboard to authenticate your computer.</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f43f64', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>4</div>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#333', margin: '0 0 8px 0' }}>Select Default Printer</h3>
+                <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Choose the printer you want to use for incoming print jobs from the dropdown menu.</p>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f43f64', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>5</div>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#333', margin: '0 0 8px 0' }}>Keep it Running!</h3>
+                <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Minimize the app. It will run in the system tray and process jobs automatically as long as your computer is on and connected to the internet.</p>
+              </div>
+            </div>
           </div>
+        </section>
+
+        {/* Troubleshooting FAQ */}
+        <section className="info-card" style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginBottom: '32px', border: '1px solid #eaeaea' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#222', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="bi bi-question-circle" style={{ color: '#f43f64' }}></i> Troubleshooting FAQ
+          </h2>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee' }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#222', fontWeight: 600 }}>1. The app says &quot;SumatraPDF not found&quot;</h4>
+              <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>You need to download and install SumatraPDF from the prerequisites section. Ensure it is installed in the default location.</p>
+            </div>
+            
+            <div style={{ padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee' }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#222', fontWeight: 600 }}>2. Print jobs are arriving but not printing</h4>
+              <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>Check if your printer is turned on and selected correctly in the agent. Open Windows Settings &gt; Printers and verify the printer is not offline.</p>
+            </div>
+            
+            <div style={{ padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee' }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#222', fontWeight: 600 }}>3. &quot;Invalid Shop Key&quot; error</h4>
+              <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>Copy the key directly from your dashboard and paste it to avoid typos. Make sure there are no extra spaces.</p>
+            </div>
+            
+            <div style={{ padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee' }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#222', fontWeight: 600 }}>4. The agent disconnects frequently</h4>
+              <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>Ensure your internet connection is stable. The agent will automatically attempt to reconnect when the connection drops.</p>
+            </div>
+            
+            <div style={{ padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee' }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#222', fontWeight: 600 }}>5. How to run automatically on startup?</h4>
+              <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>Check the &quot;Run on Startup&quot; box in the agent settings so it launches silently when you turn on your PC.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Support */}
+        <div style={{ textAlign: 'center', marginTop: '48px', marginBottom: '24px' }}>
+          <p style={{ fontSize: '15px', color: '#666', marginBottom: '16px' }}>Still need help setting up your printing system?</p>
+          <a 
+            href="https://wa.me/917069525795?text=Hi%2C%20I%20need%20help%20setting%20up%20the%20Qr%20To%20Print%20Windows%20Agent" 
+            target="_blank" 
+            rel="noreferrer"
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '10px',
+              backgroundColor: '#25D366', 
+              color: '#fff', 
+              padding: '12px 24px', 
+              borderRadius: '8px', 
+              textDecoration: 'none', 
+              fontWeight: 600,
+              fontSize: '16px',
+              boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
+            }}
+          >
+            <i className="bi bi-whatsapp" style={{ fontSize: '20px' }}></i>
+            Contact Support via WhatsApp
+          </a>
+          <p style={{ fontSize: '13px', color: '#888', marginTop: '12px' }}>+91 7069525795</p>
         </div>
-      </div>
-    </>
-  );
+
+      </main>
+    </div>
+  )
 }
