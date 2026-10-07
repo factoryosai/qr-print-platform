@@ -208,7 +208,7 @@ while ($true) {
                 Write-Host " -> Sending to printer: $DefaultPrinter"
                 
                 # Setup silent print arguments
-                $args = "-print-to `"$DefaultPrinter`" -silent `"$filePath`""
+                $args = "-print-to ""$DefaultPrinter"" -silent ""$filePath"""
                 $proc = Start-Process -FilePath $SumatraExe -ArgumentList $args -Wait -PassThru
                 
                 if ($proc.ExitCode -eq 0) {
