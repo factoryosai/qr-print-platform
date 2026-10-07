@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import QRCode from 'qrcode';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 export default function DownloadsPage() {
   const [shop, setShop] = useState<any>(null);
@@ -20,6 +22,7 @@ export default function DownloadsPage() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      // Fetch shop including agent_secret
       const { data: s } = await supabase.from('shops').select('*').eq('owner_user_id', user.id).single();
       if (!s) return;
       setShop(s);
@@ -47,46 +50,34 @@ export default function DownloadsPage() {
     canvas.width = 600; canvas.height = 850;
     const ctx = canvas.getContext('2d')!;
 
-    // Background
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, 600, 850);
-
-    // Header band
     ctx.fillStyle = '#f43f64';
     ctx.fillRect(0, 0, 600, 90);
-
-    // Logo text
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 32px Inter, Arial';
     ctx.textAlign = 'center';
     ctx.fillText('Qr To Print', 300, 58);
 
-    // QR code
     const qrImg = new Image();
     qrImg.src = qrDataUrl;
     await new Promise(r => { qrImg.onload = r; });
     ctx.drawImage(qrImg, 150, 130, 300, 300);
 
-    // Shop info
     ctx.fillStyle = '#171821';
     ctx.font = 'bold 28px Inter, Arial';
     ctx.fillText(shop.name, 300, 490);
-
     ctx.fillStyle = '#687080';
     ctx.font = '18px Inter, Arial';
     ctx.fillText('Scan to upload & print your documents', 300, 525);
     ctx.fillText('No app needed · Pay at counter', 300, 555);
-
     ctx.fillStyle = '#f43f64';
     ctx.font = 'bold 16px Inter, Arial';
     ctx.fillText(`Shop ID: ${shop.id}`, 300, 600);
-
-    // QR URL
     ctx.fillStyle = '#687080';
     ctx.font = '13px Inter, Arial';
     ctx.fillText(`${window.location.origin}/print/${shop.id}`, 300, 640);
 
-    // Footer
     ctx.fillStyle = '#f5f7f8';
     ctx.fillRect(0, 790, 600, 60);
     ctx.fillStyle = '#687080';
@@ -110,6 +101,149 @@ export default function DownloadsPage() {
     setLogoDone(true);
   };
 
+  const generateAgentZip = async () => {
+    if (!shop || printers.length === 0) return;
+    
+    // Fallback if agent_secret is empty for some reason
+    const agentSecret = shop.agent_secret || 'default_secret';
+
+    const zip = new JSZip();
+    
+    const configData = {
+      shop_id: shop.id,
+      agent_secret: agentSecret,
+      api_url: window.location.origin,
+      default_printer: printers[0].name
+    };
+    zip.file("config.json", JSON.stringify(configData, null, 2));
+
+    const batContent = `@echo off
+echo ========================================================
+echo   QR To Print - Windows Agent
+echo ========================================================
+echo.
+echo Starting agent in background...
+echo Please leave this window open to receive print jobs.
+echo.
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0qr-agent.ps1"
+pause
+`;
+    zip.file("Start-Agent.bat", batContent);
+
+    const ps1Content = `$ErrorActionPreference = "Continue"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$ConfigFile = Join-Path $ScriptDir "config.json"
+
+if (-Not (Test-Path $ConfigFile)) {
+    Write-Host "ERROR: config.json not found in the folder!"
+    Start-Sleep -Seconds 10
+    exit
+}
+
+$Config = Get-Content $ConfigFile | ConvertFrom-Json
+$ShopId = $Config.shop_id
+$AgentSecret = $Config.agent_secret
+$BaseUrl = $Config.api_url
+$DefaultPrinter = $Config.default_printer
+
+$Headers = @{
+    "x-shop-id" = $ShopId
+    "x-agent-secret" = $AgentSecret
+    "Content-Type" = "application/json"
+}
+
+# Locate SumatraPDF
+$SumatraPaths = @(
+    "C:\\Program Files\\SumatraPDF\\SumatraPDF.exe",
+    "C:\\Program Files (x86)\\SumatraPDF\\SumatraPDF.exe",
+    "$env:LOCALAPPDATA\\SumatraPDF\\SumatraPDF.exe"
+)
+$SumatraExe = $null
+foreach ($path in $SumatraPaths) {
+    if (Test-Path $path) {
+        $SumatraExe = $path
+        break
+    }
+}
+
+Write-Host "========================================="
+Write-Host " QR To Print - Auto Print Agent"
+Write-Host " Shop ID: $ShopId"
+Write-Host " Target Printer: $DefaultPrinter"
+Write-Host " Press Ctrl+C to stop the agent."
+Write-Host "========================================="
+
+if (-Not $SumatraExe) {
+    Write-Host "WARNING: SumatraPDF.exe was not found!"
+    Write-Host "Please install it from https://www.sumatrapdfreader.org/"
+    Write-Host "The agent will run, but printing will fail."
+    Write-Host "========================================="
+} else {
+    Write-Host "SumatraPDF found at: $SumatraExe"
+    Write-Host "Agent is READY and waiting for jobs..."
+    Write-Host "========================================="
+}
+
+while ($true) {
+    try {
+        # 1. Send Heartbeat
+        $hbUrl = "$BaseUrl/api/agent/heartbeat"
+        $hbBody = @{ agent_version = "1.0.0" } | ConvertTo-Json
+        Invoke-RestMethod -Uri $hbUrl -Method Post -Body $hbBody -Headers $Headers -ErrorAction SilentlyContinue | Out-Null
+
+        # 2. Check for Jobs
+        $jobUrl = "$BaseUrl/api/agent/next-job"
+        $response = Invoke-RestMethod -Uri $jobUrl -Method Get -Headers $Headers -ErrorAction Stop
+
+        if ($response.job -and $response.job.print_job_id) {
+            $job = $response.job
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] New Print Job Detected! ID: $($job.print_job_id)"
+            
+            # 3. Download the PDF file
+            $filePath = "$env:TEMP\\$($job.print_job_id).pdf"
+            Write-Host " -> Downloading file..."
+            Invoke-WebRequest -Uri $job.download_url -OutFile $filePath
+            
+            if ($SumatraExe -and (Test-Path $filePath)) {
+                Write-Host " -> Sending to printer: $DefaultPrinter"
+                
+                # Setup silent print arguments
+                $args = "-print-to `"$DefaultPrinter`" -silent `"$filePath`""
+                $proc = Start-Process -FilePath $SumatraExe -ArgumentList $args -Wait -PassThru
+                
+                if ($proc.ExitCode -eq 0) {
+                    Write-Host " -> Print Success!"
+                    $statusUrl = "$BaseUrl/api/agent/job-status"
+                    $statusBody = @{ print_job_id = $job.print_job_id; status = "printed" } | ConvertTo-Json
+                    Invoke-RestMethod -Uri $statusUrl -Method Post -Body $statusBody -Headers $Headers | Out-Null
+                } else {
+                    Write-Host " -> Print Failed! Exit Code: $($proc.ExitCode)"
+                    $statusUrl = "$BaseUrl/api/agent/job-status"
+                    $statusBody = @{ print_job_id = $job.print_job_id; status = "failed"; failure_reason = "SumatraPDF exited with code $($proc.ExitCode)" } | ConvertTo-Json
+                    Invoke-RestMethod -Uri $statusUrl -Method Post -Body $statusBody -Headers $Headers | Out-Null
+                }
+            } else {
+                Write-Host " -> ERROR: SumatraPDF not found or file download failed."
+                $statusUrl = "$BaseUrl/api/agent/job-status"
+                $statusBody = @{ print_job_id = $job.print_job_id; status = "failed"; failure_reason = "Missing SumatraPDF" } | ConvertTo-Json
+                Invoke-RestMethod -Uri $statusUrl -Method Post -Body $statusBody -Headers $Headers | Out-Null
+            }
+            
+            if (Test-Path $filePath) { Remove-Item $filePath -Force }
+        }
+    } catch {
+        # Ignore silent network/timeout errors
+    }
+    
+    Start-Sleep -Seconds 3
+}
+`;
+    zip.file("qr-agent.ps1", ps1Content);
+
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, `QR-Print-Agent-${shop.id}.zip`);
+  };
+
   const printUrl = shop && typeof window !== 'undefined' ? `${window.location.origin}/print/${shop.id}` : '';
 
   if (!shop) return (
@@ -129,14 +263,12 @@ export default function DownloadsPage() {
       </div>
 
       <div className="sp-body">
-        {/* Welcome */}
         {isWelcome && (
           <div className="alert-success" style={{ marginBottom: 20 }}>
             <strong>Your shop is ready.</strong> Save your Shop ID, add a printer, then download the personalized Print Agent.
           </div>
         )}
 
-        {/* Shop ID Box */}
         <div className="shop-id-box">
           <div>
             <div className="shop-id-label">Permanent Shop ID</div>
@@ -156,7 +288,6 @@ export default function DownloadsPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          {/* QR Code Poster Card */}
           <div className="info-card">
             <div className="info-card-header">
               <span style={{ background: '#dbeafe', color: '#1e40af', borderRadius: 5, padding: '2px 8px', fontSize: 11, fontWeight: 800 }}>QR</span>
@@ -178,26 +309,9 @@ export default function DownloadsPage() {
                 </button>
                 {qrDataUrl && <a href={qrDataUrl} target="_blank" rel="noopener noreferrer" className="btn-sp btn-sp-outline">Preview</a>}
               </div>
-
-              <div style={{ borderTop: '1px solid #dfe3e8', paddingTop: 16 }}>
-                <div className="form-label">Shop logo</div>
-                <div style={{ fontSize: 12, color: '#687080', marginBottom: 8 }}>Optional. If no logo is uploaded, the poster downloads without a shop logo.</div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <label className="btn-sp btn-sp-outline" style={{ cursor: 'pointer' }}>
-                    Choose File <input type="file" accept=".jpg,.jpeg,.png,.webp" style={{ display: 'none' }} onChange={e => setLogoFile(e.target.files?.[0] || null)} />
-                  </label>
-                  <span style={{ fontSize: 12, color: '#9ca3af' }}>{logoFile ? logoFile.name : 'No file chosen'}</span>
-                  {logoFile && (
-                    <button onClick={saveLogoHandler} className="btn-sp btn-sp-dark" disabled={logoSaving} style={{ marginLeft: 'auto' }}>
-                      {logoDone ? '✓ Saved' : logoSaving ? 'Saving…' : 'Save Logo'}
-                    </button>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
 
-          {/* Print Agent Card */}
           <div className="info-card">
             <div className="info-card-header">
               <span style={{ background: '#f3f4f6', color: '#374151', borderRadius: 5, padding: '2px 8px', fontSize: 11, fontWeight: 800 }}>PC</span>
@@ -209,7 +323,7 @@ export default function DownloadsPage() {
             <div className="info-card-body">
               {[
                 ['Shop ID', shop.id],
-                ['Printer', printers[0]?.name || 'Not selected'],
+                ['Target Printer', printers[0]?.name || 'Not selected'],
                 ['Server', typeof window !== 'undefined' ? window.location.origin : ''],
               ].map(([k, v]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid #f3f4f6', fontSize: 13 }}>
@@ -218,7 +332,12 @@ export default function DownloadsPage() {
                 </div>
               ))}
 
-              <button className="btn-sp btn-sp-dark" style={{ width: '100%', justifyContent: 'center', marginTop: 16 }} disabled={printers.length === 0}>
+              <button 
+                onClick={generateAgentZip}
+                className="btn-sp btn-sp-dark" 
+                style={{ width: '100%', justifyContent: 'center', marginTop: 16 }} 
+                disabled={printers.length === 0}
+              >
                 {printers.length === 0 ? 'Add Printer First' : <><i className="bi bi-download"></i> Download Print Agent ZIP</>}
               </button>
               {printers.length === 0 && (
